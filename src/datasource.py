@@ -16,7 +16,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from .config import CACHE, SERIES, BACKTEST_START, GOLD_START, VIX_PROXY_BEFORE
+from .config import CACHE, SERIES, REMOVED_SERIES, BACKTEST_START, VIX_PROXY_BEFORE
 from . import leaders
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -139,7 +139,7 @@ def build_panel(force: bool = False, quiet: bool = True) -> pd.DataFrame:
     """The single aligned table every other module reads.
 
     Rows are Nasdaq trading days from BACKTEST_START. Columns: nasdaq, vix,
-    vix_is_proxy, gold, bond, and one column per leader ticker.
+    vix_is_proxy, bond, and one column per leader ticker.
     """
     nasdaq = fetch_one(SERIES["nasdaq"]["ticker"], force=force, quiet=quiet)
     index = nasdaq.loc[BACKTEST_START:].index
@@ -147,17 +147,8 @@ def build_panel(force: bool = False, quiet: bool = True) -> pd.DataFrame:
     panel = pd.DataFrame(index=index)
     panel["nasdaq"] = nasdaq.reindex(index)
 
-    gold = fetch_one(SERIES["gold"]["ticker"], force=force, quiet=quiet)
     bond = fetch_one(SERIES["bond"]["ticker"], force=force, quiet=quiet)
     panel["bond"] = bond.reindex(index).ffill()
-
-    # Gold is NaN before GOLD_START on purpose: no free source covers 1980-86
-    # honestly, and the engine reads that NaN as "shelter in treasuries only"
-    # rather than inventing a price.
-    g = gold.reindex(index).ffill()
-    g[index < pd.Timestamp(GOLD_START)] = np.nan
-    panel["gold"] = g
-    panel["gold_available"] = panel["gold"].notna()
 
     vix = fetch_one(SERIES["vix"]["ticker"], force=force, quiet=quiet)
     panel["vix"], panel["vix_is_proxy"] = _vix_with_proxy(vix, nasdaq, index)
@@ -201,13 +192,13 @@ def provenance() -> dict:
         "provider": "Yahoo Finance (yfinance)",
         "series": out,
         "leader_note": leaders.source_note(),
+        "removed": REMOVED_SERIES,
         "caveats": [
-            f"금 펀드는 신뢰할 수 있는 데이터가 {GOLD_START} 부터 존재합니다. "
-            "그 이전 구간의 회피자산은 100% 국채 펀드로 처리됩니다 "
-            "(USERX·INIVX 의 1980년대 조정주가가 실제 금 시세와 어긋나 배제).",
             f"VIX 는 {VIX_PROXY_BEFORE} 부터 실제 지수이며, 그 이전은 나스닥 "
             "21일 실현변동성 × 1.15 로 만든 대용치입니다.",
             "시총 1위 이력은 무료 API 가 없어 큐레이션 표를 사용하며, "
             "현재 1위만 실시간 시가총액으로 자동 확인합니다.",
+            "환율과 세금은 반영하지 않았습니다. 원화 금액이 미국 자산에 그대로 "
+            "투입된다고 가정하며, 실제 수익률은 이보다 낮습니다.",
         ],
     }

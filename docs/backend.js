@@ -157,8 +157,8 @@ const routes = {
   async status(q) {
     const P = await panel(), M = await meta();
     const p = paramsFrom(q, M.defaults);
-    const holdings = ['stock', 'gold', 'bond'].some(k => q[k] !== undefined && q[k] !== '')
-      ? { stock: +q.stock || 0, gold: +q.gold || 0, bond: +q.bond || 0 } : null;
+    const holdings = ['stock', 'bond'].some(k => q[k] !== undefined && q[k] !== '')
+      ? { stock: +q.stock || 0, bond: +q.bond || 0 } : null;
     return clean(advisorStatus(P, M, p, holdings));
   },
 
@@ -183,7 +183,7 @@ const routes = {
       if (i < lo) break;
       const r = { date: P.dates[i] };
       const r2 = v => Number.isFinite(v) ? Math.round(v * 100) / 100 : null;
-      for (const key of ['nasdaq', 'vix', 'gold', 'bond', 'leader']) {
+      for (const key of ['nasdaq', 'vix', 'bond', 'leader']) {
         r[key === 'leader' ? 'leader_px' : key] = r2(tbl[key][i]);
         r[`${key}_chg`] = r2(tbl[`${key}_chg`][i]);
         r[`${key}_peak`] = r2(tbl[`${key}_peak`][i]);
@@ -207,7 +207,7 @@ function rawTable(P) {
   const n = P.dates.length;
   const t = {};
 
-  for (const key of ['nasdaq', 'vix', 'gold', 'bond']) {
+  for (const key of ['nasdaq', 'vix', 'bond']) {
     const s = P[key];
     const chg = new Float64Array(n).fill(NaN);
     const peak = new Float64Array(n).fill(NaN);
@@ -271,10 +271,7 @@ function advisorStatus(P, M, p, holdings) {
     daysLeft = Math.max(p.reentry_calm_days - (i - lastTrim), 0);
   } else { state = '주식'; targetStock = 1; daysLeft = 0; }
 
-  const goldOk = Engine.isNum(P.gold[i]);
-  const gw = goldOk ? p.gold_weight : 0;
-  const shelter = 1 - targetStock;
-  const target = { stock: targetStock, gold: shelter * gw, bond: shelter * (1 - gw) };
+  const target = { stock: targetStock, bond: 1 - targetStock };
 
   const chg = key => {
     const a = P[key][i], b = P[key][i - 1];
@@ -295,7 +292,6 @@ function advisorStatus(P, M, p, holdings) {
     leader: { label: `시총 1위 – ${lead}`, ticker: lead, close: r2(lpx[i]), chg_1d: lchg,
       ret_lookback: r2(sig.leaderRet[i]), lookback_days: p.trim_lookback,
       threshold: p.trim_threshold, triggered: !!sig.trim[i] },
-    gold: { label: '금 펀드', close: goldOk ? r2(P.gold[i]) : null, chg_1d: chg('gold'), available: goldOk },
     bond: { label: '국채 펀드', close: r2(P.bond[i]), chg_1d: chg('bond') },
   };
 
@@ -304,29 +300,27 @@ function advisorStatus(P, M, p, holdings) {
     indicators, state, days_left: daysLeft,
     last_shock_date: lastShock >= 0 ? P.dates[lastShock] : null,
     target: Object.fromEntries(Object.entries(target).map(([k, v]) => [k, Math.round(v * 10000) / 10000])),
-    gold_available: goldOk, leader: lead,
+    leader: lead,
     leader_ranking: (M.live_ranking || []).slice(0, 6),
-    actions: actionsFor(target, holdings, lead, goldOk),
+    actions: actionsFor(target, holdings, lead),
     reasoning: reasoningFor(state, daysLeft, indicators, p, lastShock >= 0 ? P.dates[lastShock] : null),
   };
 }
 
-function actionsFor(target, holdings, lead, goldOk) {
+function actionsFor(target, holdings, lead) {
   if (!holdings) return [{ kind: 'info', text:
     `현재 보유 비율을 입력하면 매매 지시를 계산합니다. 목표 비중은 ${lead} ` +
-    `${(target.stock * 100).toFixed(0)}% / 금 ${(target.gold * 100).toFixed(0)}% / ` +
-    `국채 ${(target.bond * 100).toFixed(0)}% 입니다.` }];
+    `${(target.stock * 100).toFixed(0)}% / 국채 펀드 ${(target.bond * 100).toFixed(0)}% 입니다.` }];
 
-  const total = ['stock', 'gold', 'bond'].reduce((s, k) => s + Math.max(0, holdings[k] || 0), 0);
+  const total = ['stock', 'bond'].reduce((s, k) => s + Math.max(0, holdings[k] || 0), 0);
   if (total <= 0) return [{ kind: 'info', text: '보유 비율 합계가 0입니다. 값을 확인해 주세요.' }];
 
-  const names = { stock: `${lead} (1등주)`, gold: '금 펀드', bond: '국채 펀드' };
+  const names = { stock: `${lead} (1등주)`, bond: '국채 펀드' };
   const out = [];
-  for (const k of ['stock', 'gold', 'bond']) {
+  for (const k of ['stock', 'bond']) {
     const cur = Math.max(0, holdings[k] || 0) / total;
     const diff = target[k] - cur;
     if (Math.abs(diff) < Engine.REBALANCE_BAND) continue;
-    if (k === 'gold' && !goldOk) continue;
     out.push({
       kind: diff > 0 ? 'buy' : 'sell', asset: names[k],
       current: Math.round(cur * 1000) / 10, target: Math.round(target[k] * 1000) / 10,
@@ -379,14 +373,13 @@ async function downloadCsv(start, end) {
   const t = rawTable(P);
   let [lo, hi] = Engine.bounds(P, start, end);
   const head = ['date', 'nasdaq', 'nasdaq_chg', 'nasdaq_peak', 'vix',
-    'gold', 'gold_chg', 'gold_peak', 'bond', 'bond_chg', 'bond_peak',
+    'bond', 'bond_chg', 'bond_peak',
     'leader', 'leader_px', 'leader_chg', 'leader_peak'];
   const f = v => (v === null || v === undefined || !Number.isFinite(v)) ? '' : (Math.round(v * 1e4) / 1e4);
   const lines = [head.join(',')];
   for (let i = lo; i < hi; i++) {
     lines.push([P.dates[i], f(t.nasdaq[i]), f(t.nasdaq_chg[i]), f(t.nasdaq_peak[i]),
       f(t.vix[i]),
-      f(t.gold[i]), f(t.gold_chg[i]), f(t.gold_peak[i]),
       f(t.bond[i]), f(t.bond_chg[i]), f(t.bond_peak[i]),
       P.leaderNames[P.leaderIdx[i]], f(t.leader[i]), f(t.leader_chg[i]), f(t.leader_peak[i])].join(','));
   }

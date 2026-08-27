@@ -3,7 +3,7 @@
 Model
 -----
 The portfolio is described by one number each day: the *target* share of wealth
-held in the #1 stock. Everything else sits in the shelter (금/국채 펀드).
+held in the #1 stock. Everything else sits in the shelter (국채 펀드).
 
     target = 0.0                    while sheltering after a shock
            = 1 - trim_fraction      while the leader itself is falling
@@ -90,9 +90,7 @@ def run(panel: pd.DataFrame, p: Params,
 
     dates = panel.index
     n = len(dates)
-    px_gold = np.nan_to_num(panel["gold"].to_numpy(float), nan=0.0)
     px_bond = panel["bond"].to_numpy(float)
-    gold_ok = panel["gold_available"].to_numpy(bool)
     leader = panel["leader"].to_numpy(object)
 
     # Price series per leader ticker. The stock sleeve must always be valued at
@@ -108,7 +106,7 @@ def run(panel: pd.DataFrame, p: Params,
     ym = dates.to_period("M")
     is_contrib[1:] = np.asarray(ym[1:] != ym[:-1])
 
-    u_stock = u_gold = u_bond = 0.0          # holdings, in units
+    u_stock = u_bond = 0.0                   # holdings, in units
     cost_rate = p.cost_bps / 10_000.0
 
     shelter_until = -1                       # may not leave the shelter before this
@@ -118,7 +116,6 @@ def run(panel: pd.DataFrame, p: Params,
     equity = np.zeros(n)
     twr = np.ones(n)
     w_stock_hist = np.zeros(n)
-    w_gold_hist = np.zeros(n)
     w_bond_hist = np.zeros(n)
     state_hist = np.empty(n, object)
 
@@ -131,13 +128,13 @@ def run(panel: pd.DataFrame, p: Params,
     held: str | None = None                  # ticker currently in the stock sleeve
 
     for i in range(n):
-        pg, pb = px_gold[i], px_bond[i]
+        pb = px_bond[i]
 
         # ---- 1. mark to market, at the price of what we actually hold ------
         ps_held = px_of[held][i] if held is not None else 0.0
         if held is not None and not np.isfinite(ps_held):
             ps_held = _last_finite(px_of[held], i)
-        value = u_stock * ps_held + u_gold * pg + u_bond * pb
+        value = u_stock * ps_held + u_bond * pb
 
         # which stock should the sleeve be in today
         want_ticker = leader[i]
@@ -179,28 +176,21 @@ def run(panel: pd.DataFrame, p: Params,
 
         # ---- 5. rebalance ---------------------------------------------------
         if value > 0 and (abs(cur_w - target) > REBALANCE_BAND or cf > 0 or handover):
-            gw = p.gold_weight if gold_ok[i] else 0.0   # no gold data → all bonds
-
             want_stock = value * target
-            shelter_amt = value - want_stock
-            want_gold = shelter_amt * gw
-            want_bond = shelter_amt - want_gold
+            want_bond = value - want_stock
 
             # a handover is a full round trip: sell all of the old name, buy the new
             stock_turn = (stock_val + want_stock) if handover else abs(want_stock - stock_val)
-            turnover = (stock_turn
-                        + abs(want_gold - u_gold * pg)
-                        + abs(want_bond - u_bond * pb))
+            turnover = stock_turn + abs(want_bond - u_bond * pb)
             fee = turnover * cost_rate
 
             if fee > 0:
                 value -= fee
                 total_cost += fee
-                gross = want_stock + want_gold + want_bond
+                gross = want_stock + want_bond
                 if gross > 0:                        # re-fit targets to post-fee value
                     scale = value / gross
                     want_stock *= scale
-                    want_gold *= scale
                     want_bond *= scale
 
             if turnover > value * 0.005:
@@ -213,7 +203,6 @@ def run(panel: pd.DataFrame, p: Params,
                 })
 
             u_stock = want_stock / ps_want if ps_want > 0 else 0.0
-            u_gold = want_gold / pg if pg > 0 else 0.0
             u_bond = want_bond / pb if pb > 0 else 0.0
             held = want_ticker
             ps_held = ps_want
@@ -221,7 +210,6 @@ def run(panel: pd.DataFrame, p: Params,
         equity[i] = value
         if value > 0:
             w_stock_hist[i] = u_stock * ps_held / value
-            w_gold_hist[i] = u_gold * pg / value
             w_bond_hist[i] = u_bond * pb / value
         state_hist[i] = state
         prev_value = value
@@ -234,7 +222,6 @@ def run(panel: pd.DataFrame, p: Params,
     res["_equity"] = pd.Series(equity, index=dates)
     res["_twr"] = pd.Series(twr, index=dates)
     res["_w_stock"] = pd.Series(w_stock_hist, index=dates)
-    res["_w_gold"] = pd.Series(w_gold_hist, index=dates)
     res["_w_bond"] = pd.Series(w_bond_hist, index=dates)
     res["_state"] = pd.Series(state_hist, index=dates)
     return res
@@ -328,7 +315,7 @@ def buy_and_hold(panel: pd.DataFrame, p: Params, asset: str = "leader",
         return run(panel, flat, start, end)
 
     sub = panel.copy()
-    sub["leader_px"] = sub[{"nasdaq": "nasdaq", "gold": "gold", "bond": "bond"}[asset]]
+    sub["leader_px"] = sub[{"nasdaq": "nasdaq", "bond": "bond"}[asset]]
     sub["leader"] = asset
     sub = sub.dropna(subset=["leader_px"])
     return run(sub, flat, start, end)

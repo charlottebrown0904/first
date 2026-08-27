@@ -293,7 +293,7 @@ def benchmarks() -> dict:
     out: dict[str, dict] = {}
     windows = {"train": (None, TRAIN_END), "test": (TEST_START, None), "full": (None, None)}
     for asset, label in [("leader", "1등주 계속보유"), ("nasdaq", "나스닥 지수"),
-                         ("bond", "국채 펀드"), ("gold", "금 펀드")]:
+                         ("bond", "국채 펀드")]:
         out[asset] = {"label": label}
         for wname, (s, e) in windows.items():
             try:

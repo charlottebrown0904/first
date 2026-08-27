@@ -56,7 +56,7 @@ def raw_table() -> pd.DataFrame:
             return _raw
 
         df = pd.DataFrame(index=pn.index)
-        for col in ("nasdaq", "vix", "gold", "bond"):
+        for col in ("nasdaq", "vix", "bond"):
             s = pn[col]
             df[col] = s
             df[f"{col}_chg"] = s.pct_change() * 100
@@ -78,7 +78,6 @@ def raw_table() -> pd.DataFrame:
         df["leader_chg"] = chg
         df["leader_peak"] = peak
         df["vix_is_proxy"] = pn["vix_is_proxy"]
-        df["gold_available"] = pn["gold_available"]
 
         _raw = df
         return _raw
@@ -144,8 +143,8 @@ def api_health():
 def api_status():
     p = params_from_query()
     holdings = None
-    if any(request.args.get(k) not in (None, "") for k in ("stock", "gold", "bond")):
-        holdings = {k: float(request.args.get(k) or 0) for k in ("stock", "gold", "bond")}
+    if any(request.args.get(k) not in (None, "") for k in ("stock", "bond")):
+        holdings = {k: float(request.args.get(k) or 0) for k in ("stock", "bond")}
     return jsonify(_clean(advisor.status(panel(), p, holdings)))
 
 
@@ -237,7 +236,7 @@ def api_series():
         pn = pn.loc[start:]
     out = {}
     for col, label in [("nasdaq", "나스닥"), ("leader_px", "1등주"),
-                       ("gold", "금 펀드"), ("bond", "국채 펀드")]:
+                       ("bond", "국채 펀드")]:
         s = pn[col].dropna()
         out[col] = {"label": label, **_downsample(s / s.iloc[0] * 100)}
     out["vix"] = {"label": "VIX", **_downsample(pn["vix"])}
@@ -293,8 +292,6 @@ def api_raw():
             "vix_peak": num(r["vix_peak"]), "vix_is_proxy": bool(r["vix_is_proxy"]),
             "leader": str(r["leader"]), "leader_px": num(r["leader_px"]),
             "leader_chg": num(r["leader_chg"]), "leader_peak": num(r["leader_peak"]),
-            "gold": num(r["gold"]), "gold_chg": num(r["gold_chg"]),
-            "gold_peak": num(r["gold_peak"]),
             "bond": num(r["bond"]), "bond_chg": num(r["bond_chg"]),
             "bond_peak": num(r["bond_peak"]),
             "shock": bool(s.at[d, "shock"]) if d in s.index else False,
@@ -315,7 +312,7 @@ def api_raw_csv():
     end = request.args.get("end") or None
     if start or end:
         df = df.loc[start:end]
-    out = df.drop(columns=["vix_is_proxy", "gold_available"]).round(4)
+    out = df.drop(columns=["vix_is_proxy"]).round(4)
     out.index.name = "date"
     return (out.to_csv(), 200, {
         "Content-Type": "text/csv; charset=utf-8",

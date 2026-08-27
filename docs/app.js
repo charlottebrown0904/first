@@ -234,7 +234,6 @@ function drawRing(cv, target) {
   ctx.clearRect(0, 0, 180, 180);
   const segs = [
     { v: target.stock, c: CSS('--accent') },
-    { v: target.gold,  c: CSS('--warn') },
     { v: target.bond,  c: CSS('--accent2') },   /* the ring is a fill, so pastel */
   ].filter(s => s.v > 0.001);
   let a = -Math.PI / 2;
@@ -266,7 +265,6 @@ async function loadStatus(withHoldings) {
   delete q.start; delete q.end;            // today's signal always uses all data
   if (withHoldings) {
     q.stock = $('#hStock').value || 0;
-    q.gold  = $('#hGold').value || 0;
     q.bond  = $('#hBond').value || 0;
   }
   const d = await api('status', q);
@@ -331,7 +329,6 @@ const PARAM_LABELS = {
   trim_lookback:     ['1등주 관측일수', ''],
   trim_threshold:    ['1등주 급락 기준 %', '-100 이면 사용 안 함'],
   trim_fraction:     ['일부 매도 비율', '0~1'],
-  gold_weight:       ['회피자산 중 금 비중', '0~1, 나머지는 국채'],
   initial_krw:       ['시작 투자금', '원'],
   monthly_krw:       ['매월 적립금', '원'],
   cost_bps:          ['거래비용 bp', '편도, 10 = 0.1%'],
@@ -409,7 +406,34 @@ function metricCards(d) {
       <div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
 }
 
+/* The method write-up quotes the rule that is actually loaded, so changing a
+   parameter rewrites the prose along with the numbers. Stale documentation is
+   worse than none when it sits directly above the result it describes. */
+function renderMethod(p) {
+  const set = (id, html) => { const e = $(id); if (e) e.innerHTML = html; };
+  const off = '<span style="color:var(--fg3)">사용 안 함</span>';
+
+  set('#mNasdaq', p.crash_threshold <= -900 ? off
+    : `최근 <b>${p.crash_lookback}</b>거래일 수익률 ≤ <b>${(+p.crash_threshold).toFixed(1)}%</b>`);
+  set('#mVix', +p.vix_threshold > 0
+    ? `VIX ≥ <b>${(+p.vix_threshold).toFixed(0)}</b>` : off);
+  set('#mTrim', (p.trim_threshold <= -900 || +p.trim_fraction === 0) ? off
+    : `최근 <b>${p.trim_lookback}</b>거래일 수익률 ≤ <b>${(+p.trim_threshold).toFixed(1)}%</b>`);
+  const frac = +p.trim_fraction;
+  set('#mFrac', `${(frac * 100).toFixed(0)}%`);
+  // at a 100% trim the "partial" state is a full exit; say so rather than
+  // leaving two boxes that look different but mean the same thing
+  set('#mPartial', frac >= 1
+    ? '1등주 0% <em style="font-style:normal;color:var(--warn-ink)">— 지금 설정에서는 전량 회피와 같습니다</em>'
+    : `1등주 ${((1 - frac) * 100).toFixed(0)}%`);
+  set('#mShelter', String(p.shelter_days));
+  set('#mCalm', String(p.reentry_calm_days));
+  set('#mTrimLb2', String(p.trim_lookback));
+  set('#mCost', `${(+p.cost_bps / 100).toFixed(2)}%`);
+}
+
 function renderBacktest(d) {
+  renderMethod(d.params || S.params);
   $('#btMetrics').innerHTML = metricCards(d);
 
   const c = d.curves;
@@ -590,7 +614,6 @@ const RAW_GROUPS = [
   { key: 'nasdaq', label: '나스닥 지수', cls: 'nq', cols: 3 },
   { key: 'vix',    label: 'VIX',        cls: 'vx', cols: 1 },
   { key: 'leader', label: '1등주',       cls: 'ld', cols: 3 },
-  { key: 'gold',   label: '금 펀드',     cls: 'gd', cols: 3 },
   { key: 'bond',   label: '국채 펀드',   cls: 'bd', cols: 3 },
 ];
 
@@ -687,7 +710,7 @@ async function loadOptimize() {
     const P = PARAM_LABELS;
     const keyParams = ['crash_lookback', 'crash_threshold', 'vix_threshold',
       'shelter_days', 'reentry_calm_days', 'trim_lookback', 'trim_threshold',
-      'trim_fraction', 'gold_weight'];
+      'trim_fraction'];
 
     $('#optSummary').innerHTML = `<p class="hint">
       전체 조합 ${d.generated_from.grid_size.toLocaleString()}개 중
@@ -699,9 +722,18 @@ async function loadOptimize() {
     renderPicks(d);
     renderFrontier(d);
 
+    // short column names; truncating the long labels produced two "나스닥"
+    // columns and two "1등주" columns that nobody could tell apart
+    const SHORT = {
+      crash_lookback: '나스닥<br>일수', crash_threshold: '나스닥<br>기준%',
+      vix_threshold: 'VIX<br>기준', shelter_days: '회피<br>일수',
+      reentry_calm_days: '복귀<br>대기', trim_lookback: '1등주<br>일수',
+      trim_threshold: '1등주<br>기준%', trim_fraction: '매도<br>비율',
+    };
     $('#optTable').innerHTML =
       `<thead><tr><th>#</th>` +
-      keyParams.map(k => `<th title="${esc((P[k] || [k])[0])}">${esc((P[k] || [k])[0].replace(/ .*/, ''))}</th>`).join('') +
+      keyParams.map(k =>
+        `<th title="${esc((P[k] || [k])[0])}">${SHORT[k] || esc(k)}</th>`).join('') +
       `<th>학습 CAGR</th><th>학습 MDD</th><th>검증 CAGR</th><th>검증 MDD</th>
        <th>전체 CAGR</th><th>전체 MDD</th><th>안정성</th></tr></thead><tbody>` +
       d.results.map((r, i) => `<tr class="${i === 0 ? 'best' : ''}">
@@ -744,9 +776,9 @@ function renderVerdict(d) {
         ${unanimous('trim_lookback', 60) ? '(만장일치)' : ''}.
         10일짜리 규칙은 IBM 이 1987~93년에 걸쳐 3분의 2를 잃는 것을 보지 못합니다 —
         그동안 나스닥은 오르고 있었으니 나스닥 규칙도 소용없었습니다.</li>
-      <li><b>금은 도움이 되지 않았습니다.</b> 상위 15개 중 13개가 회피자산을
-        국채 100%로 두었습니다. 금은 주식이 무너질 때 같이 무너진 적이 많습니다
-        (금 펀드 자체 MDD ${pct(d.benchmarks?.gold?.full?.mdd)}).</li>
+      <li><b>금은 도움이 되지 않아 아예 뺐습니다.</b> 상위 15개 중 13개가 회피자산을
+        국채 100%로 두었고, 금을 100%로 두면 같은 규칙의 낙폭이 -42.8%에서
+        -60.2%로 나빠졌습니다. 지금은 회피자산이 <b>국채 펀드 하나</b>뿐입니다.</li>
       <li>나스닥·VIX 충격 규칙은 <b>보조 역할</b>입니다. 짧게 보고(5~10일),
         얕은 기준(-4~-8%)에서, 짧게 피하는(10~20일) 쪽이 선택됐습니다.</li>
     </ul>
@@ -773,7 +805,7 @@ function renderVerdict(d) {
 function renderPicks(d) {
   const names = { max_return: '최고 수익률', balanced: '균형 (칼마 최대)', min_loss: '최소 손실' };
   const keyP = ['crash_lookback', 'crash_threshold', 'vix_threshold', 'shelter_days',
-    'reentry_calm_days', 'trim_lookback', 'trim_threshold', 'trim_fraction', 'gold_weight'];
+    'reentry_calm_days', 'trim_lookback', 'trim_threshold', 'trim_fraction'];
   const picks = d.picks || {};
   $('#pickCards').innerHTML = Object.entries(picks).map(([k, v]) => `
     <div class="metric pickCard">
@@ -856,6 +888,14 @@ async function loadMeta() {
 
   $('#caveatList').innerHTML =
     (m.provenance.caveats || []).map(c => `<li>${esc(c)}</li>`).join('');
+
+  const rm = m.provenance.removed || [];
+  $('#removedBox').innerHTML = rm.length ? rm.map(r => `
+    <div class="verdict caution">
+      <h4>${esc(r.label)} — 제외했습니다</h4>
+      <p class="hint" style="margin:.2rem 0 .4rem">시도한 티커: <span class="mono">${esc(r.tried)}</span></p>
+      <ul>${r.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+    </div>`).join('') : '<p class="hint">없음</p>';
   $('#leaderNote').textContent = m.provenance.leader_note;
   $('#leaderTable').innerHTML =
     `<thead><tr><th>시작일</th><th>티커</th><th>회사</th><th>배경</th></tr></thead><tbody>` +
