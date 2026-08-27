@@ -374,7 +374,7 @@ def api_refresh():
     datasource.refresh_all(force=True, quiet=True)
     panel(force=True)
     from scripts.build_static import main as rebuild
-    rebuild()
+    rebuild(fetch=False)          # 방금 받았으므로 다시 받지 않습니다
     return jsonify(_clean({"ok": True, "provenance": datasource.provenance(),
                            "last": str(panel().index[-1].date())}))
 

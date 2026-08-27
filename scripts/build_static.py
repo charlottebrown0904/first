@@ -87,9 +87,21 @@ def build_meta_json() -> dict:
     }
 
 
-def main() -> None:
+def main(fetch: bool = True) -> None:
+    """fetch=False 는 방금 시세를 받아온 호출자용입니다 (app.py 의 /api/refresh).
+
+    fetch=True 일 때 refresh_all 을 부르는 이유는 캐시 때문만이 아닙니다.
+    실시간 시가총액 1위는 거기서만 갱신되는데, CI 러너에는 캐시가 없어
+    이걸 건너뛰면 배포본의 순위표가 통째로 비어 버립니다.
+    """
     DOCS.mkdir(exist_ok=True)
     (DOCS / "data").mkdir(exist_ok=True)
+
+    if fetch:
+        print("· 시세 확인 (캐시가 최신이면 건너뜁니다)")
+        datasource.refresh_all(quiet=True)
+        live = leaders.load_timeline()[-1]
+        print(f"  현재 1위 {live['ticker']}")
 
     print("· 시세 패널 굽는 중")
     panel_json = build_panel_json()
@@ -129,7 +141,8 @@ def main() -> None:
     # Jekyll would otherwise ignore files it does not recognise
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     print(f"\n완료 → {DOCS}")
-    print("GitHub → Settings → Pages → Source: main 브랜치 /docs 로 지정하세요.")
+    print("배포는 .github/workflows/pages.yml 이 합니다 "
+          "(Settings → Pages → Source: GitHub Actions).")
 
 
 if __name__ == "__main__":
