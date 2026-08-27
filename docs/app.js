@@ -1000,6 +1000,7 @@ async function loadMeta() {
       <p class="hint" style="margin:.2rem 0 .4rem">시도한 티커: <span class="mono">${esc(r.tried)}</span></p>
       <ul>${r.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
     </div>`).join('') : '<p class="hint">없음</p>';
+  renderReviewed(m.provenance.reviewed_shelters);
   $('#leaderNote').textContent = m.provenance.leader_note;
   $('#leaderTable').innerHTML =
     `<thead><tr><th>시작일</th><th>티커</th><th>회사</th><th>배경</th></tr></thead><tbody>` +
@@ -1007,6 +1008,32 @@ async function loadMeta() {
       <td style="text-align:left">${esc(l.name)}</td>
       <td style="text-align:left">${esc(l.why)}${l.live ? '<span class="tag">실시간</span>' : ''}</td></tr>`).join('') +
     '</tbody>';
+}
+
+/* Assets that were tested as a shelter and turned down. Kept on the page for
+   the same reason the gold write-up is: "why not gold/commodities?" is the
+   first question anyone asks, and the answer is a measurement, not an opinion. */
+function renderReviewed(r) {
+  const box = $('#reviewedBox');
+  if (!box) return;
+  if (!r) { box.innerHTML = '<p class="hint">기록 없음</p>'; return; }
+
+  box.innerHTML = `
+    <p class="hint"><b>${esc(r.question)}</b><br>${esc(r.method)}</p>
+    <div class="verdict">
+      <h4>${esc(r.verdict)}</h4>
+      <ul><li>기준선 — ${esc(r.baseline)}</li></ul>
+    </div>
+    ${(r.groups || []).map(g => `
+      <div class="reviewGroup">
+        <h4>${esc(g.label)}</h4>
+        <p class="tried">시험한 티커: <span class="mono">${esc(g.tried)}</span></p>
+        <ul>${g.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+      </div>`).join('')}
+    <div class="verdict caution">
+      <h4>같이 알아야 할 것</h4>
+      <ul><li>${esc(r.caveat)}</li></ul>
+    </div>`;
 }
 
 /* ══════════════════════════════ boot ═════════════════════════════════ */
