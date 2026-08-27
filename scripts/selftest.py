@@ -61,17 +61,15 @@ sw = lead[lead != lead.shift(1)].index[1:]
 bad = [(str(d.date()), float(tw.get(d, 0))) for d in sw if abs(tw.get(d, 0)) > 0.15]
 check("교체일에 가짜 손익 점프 없음", not bad, str(bad[:3]))
 
-print("\n5. 회피자산 데이터 없는 구간")
-p2 = Params.from_dict({**p.to_dict(), "gold_weight": 1.0})
-r3 = run(panel, p2, None, "1985-12-31")
-check("1986년 이전 금 비중이 0", float(r3["_w_gold"].max()) == 0.0,
-      f"max gold weight {float(r3['_w_gold'].max()):.4f}")
-check("그 구간에서도 회피가 동작(국채로)", float(r3["_w_bond"].max()) > 0.5,
+print("\n5. 회피자산")
+r3 = run(panel, Params(), None, "1995-12-29")
+check("회피할 때 국채로 전량 이동", float(r3["_w_bond"].max()) > 0.98,
       f"max bond weight {float(r3['_w_bond'].max()):.3f}")
+check("회피자산은 국채 하나뿐 (금 제거됨)", "_w_gold" not in r3)
 
 print("\n6. 비중 합")
-tot = (r1["_w_stock"] + r1["_w_gold"] + r1["_w_bond"])
-check("주식+금+국채 = 1", bool(((tot - 1).abs() < 1e-6).all()),
+tot = (r1["_w_stock"] + r1["_w_bond"])
+check("주식+국채 = 1", bool(((tot - 1).abs() < 1e-6).all()),
       f"max dev {float((tot-1).abs().max()):.2e}")
 
 print("\n" + ("모든 검사 통과" if not fails else f"실패 {len(fails)}건: {fails}"))

@@ -13,30 +13,36 @@ for _d in (CACHE, SEED, RESULTS):
     _d.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------- data series
-# Every series below is pulled from Yahoo Finance (yfinance). The two shelter
-# funds are chosen for history length: both start 1980-01-02, which is what
-# makes a ~46 year backtest possible at all. Bullion/ETF equivalents only start
-# in 2000/2004 and are kept as modern-era cross-checks.
-# NOTE on the gold leg. Two obvious candidates were rejected after auditing
-# their Yahoo adjustment factors against known gold history:
-#   USERX  - dividend record is ~10x overstated ($49 payouts on a $53 NAV),
-#            which inflates the adjusted series to a nonsensical 31%/yr.
-#   INIVX  - sane from 1986 on, but prints +9.1%/yr through 1980-86, a stretch
-#            when bullion actually fell 59%. Its early segment is unusable.
-# CEF (Central Fund of Canada) holds physical bullion, has a clean payout
-# record (largest distribution = 0.3% of NAV), and tracks spot gold at
-# corr 0.74 / beta 1.10 across 40 years. It is one consistent asset for the
-# whole window, which beats splicing three instruments of different volatility.
+# Every series below is pulled from Yahoo Finance (yfinance). The shelter asset
+# is FGOVX, chosen for history length - it starts 1980-01-02, which is what
+# makes a ~46 year backtest possible at all. IEF is the modern-era cross-check.
+# The shelter has one leg only; see REMOVED_SERIES for why gold is not here.
 SERIES = {
     "nasdaq":   {"ticker": "^IXIC",  "label": "나스닥 종합지수",         "since": "1971-02-05"},
     "vix":      {"ticker": "^VIX",   "label": "VIX 변동성지수",          "since": "1990-01-02"},
-    "gold":     {"ticker": "CEF",    "label": "금 펀드 (CEF, 실물보유)",  "since": "1986-04-03"},
     "bond":     {"ticker": "FGOVX",  "label": "국채 펀드 (FGOVX)",       "since": "1980-01-02"},
-    "gold_alt": {"ticker": "GC=F",   "label": "금 현물 (참고)",          "since": "2000-08-30"},
     "bond_alt": {"ticker": "IEF",    "label": "美 7-10년 국채 ETF (참고)", "since": "2002-07-30"},
     "sp500":    {"ticker": "^GSPC",  "label": "S&P 500 (참고)",          "since": "1960-01-04"},
     "usdkrw":   {"ticker": "KRW=X",  "label": "원/달러 환율",            "since": "2003-12-01"},
 }
+
+# 금 펀드는 처음에 회피자산의 한 축으로 넣었다가 뺐습니다. 근거를 남겨 둡니다.
+REMOVED_SERIES = [
+    {
+        "label": "금 펀드",
+        "tried": "USERX · INIVX · CEF · GC=F",
+        "why": [
+            "회피자산으로서 제 역할을 못 했습니다. 금 펀드 자체의 최대 낙폭이 -63% 로, "
+            "주식이 무너질 때 같이 무너진 적이 많습니다 (국채 펀드는 -19%).",
+            "파라미터 탐색 상위 15개 규칙 중 13개가 금 비중을 0% 로 골랐습니다. "
+            "금을 100% 로 두면 같은 규칙의 낙폭이 -42.8% 에서 -60.2% 로 나빠졌습니다.",
+            "데이터 품질도 나빴습니다. USERX 는 주가 $53 인 펀드에 $49 짜리 배당이 "
+            "기록돼 있어 조정계열이 연 31% 라는 허구를 냈고, INIVX 는 금 현물이 59% "
+            "폭락한 1980-86년 구간에 +9.1%/년으로 찍혀 있었습니다. 실물 보유 CEF 로 "
+            "바꿔도 1986년 이전이 비어 46년 백테스트를 채우지 못했습니다.",
+        ],
+    },
+]
 
 # Every ticker that has ever been the largest US company in the curated record,
 # plus the live candidates checked each refresh to resolve *today's* leader.
@@ -46,8 +52,6 @@ LEADER_CANDIDATES = [
 ]
 
 BACKTEST_START = "1980-01-02"    # Nasdaq + treasury fund + leader all exist
-GOLD_START = "1986-04-03"        # before this there is no trustworthy gold data,
-                                 # so the shelter runs 100% treasury instead
 VIX_PROXY_BEFORE = "1990-01-02"  # before this, VIX is a realised-vol proxy
 
 # ------------------------------------------------------------------ strategy
@@ -55,19 +59,22 @@ VIX_PROXY_BEFORE = "1990-01-02"  # before this, VIX is a realised-vol proxy
 class Params:
     """One complete trading rule. All thresholds are in percent."""
 
-    # Defaults are the rule the walk-forward search settled on: fitted on
-    # 1980-2005 only, it then earned 16.2%/yr on 2006-2026 which the search
-    # never saw. See PRESETS below for the other points on the frontier.
+    # Defaults are the '공격 (수익 우선)' rule: the highest full-period return
+    # the walk-forward search produced - 17.3%/yr against 13.9% for holding the
+    # leader outright, with a shallower hole too (-42.8% vs -67.4%). Fitted on
+    # 1980-2005 only; it then earned 17.5% on 2006-2026, which the search never
+    # saw. VIX is switched off in this rule: the Nasdaq trigger already catches
+    # what it would have caught, and the extra signal only added trades.
 
     # --- shock detection on the Nasdaq (지표 1) -----------------------------
     crash_lookback: int = 5         # 며칠에 걸친 하락을 볼 것인가
     crash_threshold: float = -6.0   # 그 기간 수익률이 이보다 낮으면 '충격'
 
     # --- shock detection on the VIX (지표 2) --------------------------------
-    vix_threshold: float = 45.0     # VIX 가 이 위로 뜨면 충격 (0 = 사용 안 함)
+    vix_threshold: float = 0.0      # VIX 가 이 위로 뜨면 충격 (0 = 사용 안 함)
 
     # --- how long to hide, and when to come back ---------------------------
-    shelter_days: int = 20          # 최소 회피 기간 (거래일)
+    shelter_days: int = 10          # 최소 회피 기간 (거래일)
     reentry_calm_days: int = 5      # 추가 충격 없이 이 기간 지나야 복귀
 
     # --- de-risking on the leader stock itself (지표 3) ---------------------
@@ -79,9 +86,6 @@ class Params:
     trim_lookback: int = 60
     trim_threshold: float = -10.0   # 1등주가 이만큼 빠지면 매도
     trim_fraction: float = 1.0      # 그중 몇 %를 회피자산으로 옮길지
-
-    # --- shelter composition (지표 4) --------------------------------------
-    gold_weight: float = 0.0        # 회피자산 중 금 비중 (나머지는 국채)
 
     # --- cash flows --------------------------------------------------------
     initial_krw: float = 10_000_000
@@ -112,7 +116,6 @@ SEARCH_GRID = {
     "trim_lookback":     [10, 60, 120, 200],
     "trim_threshold":    [-10.0, -20.0, -30.0, -100.0],   # -100 = 사실상 사용 안 함
     "trim_fraction":     [0.0, 0.3, 0.5, 1.0],
-    "gold_weight":       [0.0, 0.5, 1.0],
 }
 
 # Walk-forward split. Rules are fitted on TRAIN only, then scored on TEST that
@@ -124,30 +127,32 @@ TEST_START = "2006-01-01"
 # Points on the return/drawdown frontier the search produced. The UI offers
 # these as one-click presets; `full_*` are full-period results for the label.
 PRESETS = {
-    "optimized": {
-        "label": "최적 (탐색 1위)",
-        "note": "수익·낙폭 모두 단순보유보다 나음. 1980-2005 로만 찾고 2006년 이후로 검증.",
-        "full_cagr": 0.1664, "full_mdd": -0.428,
-        "params": {"crash_lookback": 5, "crash_threshold": -6.0, "vix_threshold": 45.0,
-                   "shelter_days": 20, "reentry_calm_days": 5, "trim_lookback": 60,
-                   "trim_threshold": -10.0, "trim_fraction": 1.0, "gold_weight": 0.0},
-    },
     "aggressive": {
-        "label": "공격 (수익 우선)",
-        "note": "회피를 최소화. 수익은 가장 높지만 낙폭이 -47% 까지 갑니다.",
-        "full_cagr": 0.1715, "full_mdd": -0.474,
+        "label": "공격 (수익 우선) · 기본",
+        "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, "
+                "-42.8% 짜리 구덩이는 여전히 각오해야 합니다. 매매 연 6.7회.",
+        "full_cagr": 0.1731, "full_mdd": -0.428,
         "params": {"crash_lookback": 5, "crash_threshold": -6.0, "vix_threshold": 0.0,
-                   "shelter_days": 20, "reentry_calm_days": 10, "trim_lookback": 60,
-                   "trim_threshold": -20.0, "trim_fraction": 1.0, "gold_weight": 0.0},
+                   "shelter_days": 10, "reentry_calm_days": 5, "trim_lookback": 60,
+                   "trim_threshold": -10.0, "trim_fraction": 1.0},
+    },
+    "lowturn": {
+        "label": "간결 (매매 최소)",
+        "note": "수익을 0.7%p 내주는 대신 매매가 연 3.2회로 절반이고 낙폭도 조금 낮습니다. "
+                "손이 덜 가는 쪽을 원하면 이쪽.",
+        "full_cagr": 0.1662, "full_mdd": -0.414,
+        "params": {"crash_lookback": 5, "crash_threshold": -8.0, "vix_threshold": 0.0,
+                   "shelter_days": 10, "reentry_calm_days": 20, "trim_lookback": 60,
+                   "trim_threshold": -20.0, "trim_fraction": 1.0},
     },
     "defensive": {
         "label": "방어 (낙폭 우선)",
-        "note": "낙폭을 -32% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 "
-                "수익률은 4%p 포기합니다.",
-        "full_cagr": 0.1243, "full_mdd": -0.322,
+        "note": "낙폭을 -31% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 "
+                "수익률은 5%p 포기합니다.",
+        "full_cagr": 0.1217, "full_mdd": -0.313,
         "params": {"crash_lookback": 5, "crash_threshold": -6.0, "vix_threshold": 35.0,
-                   "shelter_days": 60, "reentry_calm_days": 10, "trim_lookback": 60,
-                   "trim_threshold": -10.0, "trim_fraction": 1.0, "gold_weight": 0.0},
+                   "shelter_days": 60, "reentry_calm_days": 20, "trim_lookback": 60,
+                   "trim_threshold": -10.0, "trim_fraction": 1.0},
     },
     "buyhold": {
         "label": "비교용: 계속보유",
@@ -155,6 +160,6 @@ PRESETS = {
         "full_cagr": 0.1390, "full_mdd": -0.674,
         "params": {"crash_lookback": 20, "crash_threshold": -999.0, "vix_threshold": 0.0,
                    "shelter_days": 20, "reentry_calm_days": 5, "trim_lookback": 60,
-                   "trim_threshold": -999.0, "trim_fraction": 0.0, "gold_weight": 0.0},
+                   "trim_threshold": -999.0, "trim_fraction": 0.0},
     },
 }

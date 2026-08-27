@@ -23,7 +23,6 @@ if __name__ == "__main__":
     print(f"  나스닥   {row['nasdaq']:>12,.2f}")
     print(f"  VIX      {row['vix']:>12,.2f}" + ("  (대용치)" if row["vix_is_proxy"] else ""))
     print(f"  1등주    {row['leader']:>6s} {row['leader_px']:>10,.2f}")
-    print(f"  금 펀드  {row['gold']:>12,.2f}" if row["gold_available"] else "  금 펀드  (데이터 없음)")
     print(f"  국채펀드 {row['bond']:>12,.2f}")
 
     tl = leaders.load_timeline()

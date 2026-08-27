@@ -68,11 +68,8 @@ def status(panel: pd.DataFrame, p: Params, holdings: dict | None = None) -> dict
     row, prow = panel.loc[last], panel.loc[prev]
     st = _replay_state(panel, p)
 
-    gold_ok = bool(row["gold_available"])
-    gw = p.gold_weight if gold_ok else 0.0
     tgt_stock = st["target_stock"]
-    shelter = 1.0 - tgt_stock
-    target = {"stock": tgt_stock, "gold": shelter * gw, "bond": shelter * (1 - gw)}
+    target = {"stock": tgt_stock, "bond": 1.0 - tgt_stock}
 
     def chg(col: str) -> float | None:
         a, b = row.get(col), prow.get(col)
@@ -105,10 +102,6 @@ def status(panel: pd.DataFrame, p: Params, holdings: dict | None = None) -> dict
             "threshold": p.trim_threshold,
             "triggered": st["trim_today"],
         },
-        "gold": {
-            "label": "금 펀드", "close": round(float(row["gold"]), 2) if gold_ok else None,
-            "chg_1d": chg("gold"), "available": gold_ok,
-        },
         "bond": {
             "label": "국채 펀드", "close": round(float(row["bond"]), 2),
             "chg_1d": chg("bond"),
@@ -123,38 +116,35 @@ def status(panel: pd.DataFrame, p: Params, holdings: dict | None = None) -> dict
         "days_left": st["days_left"],
         "last_shock_date": st["last_shock_date"],
         "target": {k: round(v, 4) for k, v in target.items()},
-        "gold_available": gold_ok,
         "leader": lead_ticker,
         "leader_ranking": leaders.live_ranking()[:6],
-        "actions": _actions(target, holdings, st, lead_ticker, gold_ok),
+        "actions": _actions(target, holdings, st, lead_ticker),
         "reasoning": _reasoning(st, indicators, p),
     }
 
 
 def _actions(target: dict, holdings: dict | None, st: dict,
-             lead: str, gold_ok: bool) -> list[dict]:
+             lead: str) -> list[dict]:
     """Concrete instructions, given what the user says they currently hold."""
     if not holdings:
         return [{
             "kind": "info",
             "text": ("현재 보유 비율을 입력하면 매매 지시를 계산합니다. "
                      f"목표 비중은 {lead} {target['stock']*100:.0f}% / "
-                     f"금 {target['gold']*100:.0f}% / 국채 {target['bond']*100:.0f}% 입니다."),
+                     f"국채 펀드 {target['bond']*100:.0f}% 입니다."),
         }]
 
-    total = sum(max(0.0, float(holdings.get(k, 0) or 0)) for k in ("stock", "gold", "bond"))
+    total = sum(max(0.0, float(holdings.get(k, 0) or 0)) for k in ("stock", "bond"))
     if total <= 0:
         return [{"kind": "info", "text": "보유 비율 합계가 0입니다. 값을 확인해 주세요."}]
 
-    cur = {k: max(0.0, float(holdings.get(k, 0) or 0)) / total for k in ("stock", "gold", "bond")}
-    names = {"stock": f"{lead} (1등주)", "gold": "금 펀드", "bond": "국채 펀드"}
+    cur = {k: max(0.0, float(holdings.get(k, 0) or 0)) / total for k in ("stock", "bond")}
+    names = {"stock": f"{lead} (1등주)", "bond": "국채 펀드"}
 
     out: list[dict] = []
-    for k in ("stock", "gold", "bond"):
+    for k in ("stock", "bond"):
         diff = target[k] - cur[k]
         if abs(diff) < engine.REBALANCE_BAND:
-            continue
-        if k == "gold" and not gold_ok:
             continue
         out.append({
             "kind": "buy" if diff > 0 else "sell",

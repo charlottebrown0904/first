@@ -26,7 +26,6 @@
   --up-soft:#dcf0e8;
   --down:#d4756f;        --down-ink:#b03d35;
   --down-soft:#fadfdd;
-  --gold:#c9a961;
 
   --shadow:0 1px 2px rgba(60,50,40,.05), 0 2px 8px rgba(60,50,40,.04);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace;
@@ -160,6 +159,7 @@ main{max-width:1180px; margin:0 auto; padding:1.4rem 1.5rem 2rem}
 
 /* ── forms ─────────────────────────────────────────────────── */
 .holdRow{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:.8rem}
+.holdRow.two{grid-template-columns:repeat(2,1fr)}
 .holdRow label,.ctlRow label,.grid label{
   display:flex; flex-direction:column; gap:.24rem; font-size:.77rem; color:var(--fg2)}
 input,select{
@@ -247,7 +247,6 @@ canvas{width:100%; display:block; cursor:crosshair}
 .tbl th.grp.nq{background:var(--accent-soft)}
 .tbl th.grp.vx{background:var(--shelter-soft)}
 .tbl th.grp.ld{background:var(--accent2-soft)}
-.tbl th.grp.gd{background:var(--warn-soft)}
 .tbl th.grp.bd{background:#e8f0ea}
 .tbl td.sep,.tbl th.sep{border-left:1px solid var(--line)}
 .tbl tr.sig td{background:var(--down-soft)}
@@ -320,3 +319,36 @@ footer strong{color:var(--warn-ink)}
 .st.good .stv{color:var(--accent2-ink)}
 .st.bad .stv{color:var(--warn-ink)}
 .st .sts{font-size:.76rem; color:var(--fg2); line-height:1.5}
+
+/* ── 매매 방법 설명 ────────────────────────────────────────── */
+.method .mHint{font-size:.84rem; color:var(--fg2); margin:.3rem 0 .7rem}
+.states{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:.6rem; margin:.5rem 0 .3rem}
+.stt{border-radius:10px; padding:.6rem .8rem; font-size:.86rem; border:1px solid var(--line)}
+.stt b{display:block; font-size:.78rem; margin-bottom:.1rem}
+.stt span{display:block; font-size:.73rem; color:var(--fg3); margin-top:.2rem}
+.s-stock{background:var(--accent-soft); border-color:#cadcf1}
+.s-stock b{color:var(--accent-ink)}
+.s-part{background:var(--warn-soft); border-color:#eed9bd}
+.s-part b{color:var(--warn-ink)}
+.s-shel{background:var(--shelter-soft); border-color:#d6cef0}
+.s-shel b{color:var(--shelter-ink)}
+
+.mTbl td:first-child{white-space:nowrap}
+.mTbl td{font-family:inherit}
+.mTbl td .mono{font-family:var(--mono)}
+
+.steps{counter-reset:m; list-style:none; padding:0; margin:.4rem 0 0}
+.steps li{
+  counter-increment:m; position:relative; padding:.5rem 0 .5rem 2rem;
+  font-size:.87rem; border-bottom:1px dashed var(--line);
+}
+.steps li:last-child{border-bottom:0}
+.steps li::before{
+  content:counter(m); position:absolute; left:0; top:.55rem;
+  width:1.35rem; height:1.35rem; border-radius:6px;
+  background:var(--bg3); color:var(--fg2); border:1px solid var(--line);
+  font-size:.7rem; font-weight:700; font-family:var(--mono);
+  display:flex; align-items:center; justify-content:center;
+}
+.steps .note{display:block; font-size:.76rem; color:var(--fg3); margin-top:.15rem}

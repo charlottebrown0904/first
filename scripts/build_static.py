@@ -60,7 +60,6 @@ def build_panel_json() -> dict:
         "dates": [str(d.date()) for d in panel.index],
         "nasdaq": [_num(v) for v in panel["nasdaq"]],
         "vix": [_num(v) for v in panel["vix"]],
-        "gold": [_num(v) for v in panel["gold"]],
         "bond": [_num(v) for v in panel["bond"]],
         "vixProxy": [int(bool(v)) for v in panel["vix_is_proxy"]],
         "leaderNames": names,
@@ -96,8 +95,9 @@ def main() -> None:
     panel_json = build_panel_json()
     pf = DOCS / "data" / "panel.json"
     pf.write_text(json.dumps(panel_json, separators=(",", ":")), encoding="utf-8")
+    n_series = len(panel_json["tickers"]) + 3      # nasdaq, vix, bond
     print(f"  {pf.name}  {pf.stat().st_size/1e6:.2f} MB  "
-          f"{len(panel_json['dates']):,}일 × {len(panel_json['tickers'])+4}계열")
+          f"{len(panel_json['dates']):,}일 × {n_series}계열")
 
     print("· 메타데이터")
     mf = DOCS / "data" / "meta.json"

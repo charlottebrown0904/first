@@ -35,7 +35,7 @@ function makeView(panel, start, end, assetOverride) {
   let leaderPx, leaderName, pxOf;
   if (assetOverride) {
     const s = panel[assetOverride];
-    while (lo < hi && !isNum(s[lo])) lo++;          // gold 는 1986년부터
+    while (lo < hi && !isNum(s[lo])) lo++;          // 값이 없는 앞부분은 건너뜁니다
     leaderPx = s;
     leaderName = () => assetOverride;
     pxOf = { [assetOverride]: s };
@@ -118,16 +118,15 @@ function run(panel, params, start, end, assetOverride) {
 
   const sig = buildSignals(view, p);
   const dates = panel.dates;
-  const gold = panel.gold, bond = panel.bond;
+  const bond = panel.bond;
 
   const equity = new Float64Array(n);
   const twr = new Float64Array(n).fill(1);
   const wStock = new Float64Array(n);
-  const wGold = new Float64Array(n);
   const wBond = new Float64Array(n);
   const state = new Array(n);
 
-  let uStock = 0, uGold = 0, uBond = 0;
+  let uStock = 0, uBond = 0;
   const costRate = p.cost_bps / 10000;
   let shelterUntil = -1, lastShock = -1e9, lastTrim = -1e9;
   let totalCost = 0, totalContrib = 0, nTrades = 0, prevValue = 0;
@@ -135,9 +134,8 @@ function run(panel, params, start, end, assetOverride) {
   const trades = [], cfDates = [], cfAmts = [];
 
   for (let i = 0; i < n; i++) {
-    const g = gold[lo + i], b = bond[lo + i];
-    const pg = isNum(g) ? g : 0, pb = isNum(b) ? b : 0;
-    const goldOk = assetOverride ? false : isNum(g);
+    const b = bond[lo + i];
+    const pb = isNum(b) ? b : 0;
 
     /* 1. 실제로 들고 있는 종목의 가격으로 평가 */
     let psHeld = 0;
@@ -145,7 +143,7 @@ function run(panel, params, start, end, assetOverride) {
       const arr = pxOf[held];
       psHeld = isNum(arr[lo + i]) ? arr[lo + i] : lastFinite(arr, lo + i);
     }
-    let value = uStock * psHeld + uGold * pg + uBond * pb;
+    let value = uStock * psHeld + uBond * pb;
 
     /* 오늘 어느 종목에 있어야 하는가 */
     let wantTicker = leaderName(lo + i);
@@ -185,22 +183,19 @@ function run(panel, params, start, end, assetOverride) {
 
     /* 5. 리밸런스 */
     if (value > 0 && (Math.abs(curW - target) > REBALANCE_BAND || cf > 0 || handover)) {
-      const gw = goldOk ? p.gold_weight : 0;
       let wantStock = value * target;
-      const shelterAmt = value - wantStock;
-      let wantGold = shelterAmt * gw;
-      let wantBond = shelterAmt - wantGold;
+      let wantBond = value - wantStock;
 
       const stockTurn = handover ? (stockVal + wantStock) : Math.abs(wantStock - stockVal);
-      const turnover = stockTurn + Math.abs(wantGold - uGold * pg) + Math.abs(wantBond - uBond * pb);
+      const turnover = stockTurn + Math.abs(wantBond - uBond * pb);
       const fee = turnover * costRate;
 
       if (fee > 0) {
         value -= fee; totalCost += fee;
-        const gross = wantStock + wantGold + wantBond;
+        const gross = wantStock + wantBond;
         if (gross > 0) {
           const scale = value / gross;
-          wantStock *= scale; wantGold *= scale; wantBond *= scale;
+          wantStock *= scale; wantBond *= scale;
         }
       }
 
@@ -215,7 +210,6 @@ function run(panel, params, start, end, assetOverride) {
       }
 
       uStock = psWant > 0 ? wantStock / psWant : 0;
-      uGold = pg > 0 ? wantGold / pg : 0;
       uBond = pb > 0 ? wantBond / pb : 0;
       held = wantTicker; psHeld = psWant;
     }
@@ -223,7 +217,6 @@ function run(panel, params, start, end, assetOverride) {
     equity[i] = value;
     if (value > 0) {
       wStock[i] = uStock * psHeld / value;
-      wGold[i] = uGold * pg / value;
       wBond[i] = uBond * pb / value;
     }
     state[i] = st;
@@ -237,7 +230,7 @@ function run(panel, params, start, end, assetOverride) {
   res.trades = trades.slice(-300);
   res._dates = dates.slice(lo, lo + n);
   res._equity = equity; res._twr = twr;
-  res._wStock = wStock; res._wGold = wGold; res._wBond = wBond;
+  res._wStock = wStock; res._wBond = wBond;
   res._state = state;
   return res;
 }

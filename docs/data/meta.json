@@ -21,15 +21,6 @@
     "last": "2026-08-27"
    },
    {
-    "key": "gold",
-    "label": "금 펀드 (CEF, 실물보유)",
-    "ticker": "CEF",
-    "fetched_at": "2026-08-27T21:18:40",
-    "rows": 10178,
-    "first": "1986-04-03",
-    "last": "2026-08-26"
-   },
-   {
     "key": "bond",
     "label": "국채 펀드 (FGOVX)",
     "ticker": "FGOVX",
@@ -37,15 +28,6 @@
     "rows": 11758,
     "first": "1980-01-02",
     "last": "2026-08-26"
-   },
-   {
-    "key": "gold_alt",
-    "label": "금 현물 (참고)",
-    "ticker": "GC=F",
-    "fetched_at": "2026-08-27T21:18:10",
-    "rows": 6522,
-    "first": "2000-08-30",
-    "last": "2026-08-27"
    },
    {
     "key": "bond_alt",
@@ -130,10 +112,21 @@
    }
   ],
   "leader_note": "미국 시가총액 1위 기업의 역사적 기록. 과거 시총 순위를 제공하는 무료 API 는 존재하지 않으므로, 이 표는 공개된 기업 역사 기록을 바탕으로 큐레이션한 것이며 월 단위 해상도입니다. 교체일 전후 수개월은 실제로 1·2위가 엎치락뒤치락하던 구간이라 날짜에 오차가 있을 수 있습니다. 최신 구간은 src/leaders.py 가 yfinance 실시간 시가총액으로 자동 갱신합니다.",
+  "removed": [
+   {
+    "label": "금 펀드",
+    "tried": "USERX · INIVX · CEF · GC=F",
+    "why": [
+     "회피자산으로서 제 역할을 못 했습니다. 금 펀드 자체의 최대 낙폭이 -63% 로, 주식이 무너질 때 같이 무너진 적이 많습니다 (국채 펀드는 -19%).",
+     "파라미터 탐색 상위 15개 규칙 중 13개가 금 비중을 0% 로 골랐습니다. 금을 100% 로 두면 같은 규칙의 낙폭이 -42.8% 에서 -60.2% 로 나빠졌습니다.",
+     "데이터 품질도 나빴습니다. USERX 는 주가 $53 인 펀드에 $49 짜리 배당이 기록돼 있어 조정계열이 연 31% 라는 허구를 냈고, INIVX 는 금 현물이 59% 폭락한 1980-86년 구간에 +9.1%/년으로 찍혀 있었습니다. 실물 보유 CEF 로 바꿔도 1986년 이전이 비어 46년 백테스트를 채우지 못했습니다."
+    ]
+   }
+  ],
   "caveats": [
-   "금 펀드는 신뢰할 수 있는 데이터가 1986-04-03 부터 존재합니다. 그 이전 구간의 회피자산은 100% 국채 펀드로 처리됩니다 (USERX·INIVX 의 1980년대 조정주가가 실제 금 시세와 어긋나 배제).",
    "VIX 는 1990-01-02 부터 실제 지수이며, 그 이전은 나스닥 21일 실현변동성 × 1.15 로 만든 대용치입니다.",
-   "시총 1위 이력은 무료 API 가 없어 큐레이션 표를 사용하며, 현재 1위만 실시간 시가총액으로 자동 확인합니다."
+   "시총 1위 이력은 무료 API 가 없어 큐레이션 표를 사용하며, 현재 1위만 실시간 시가총액으로 자동 확인합니다.",
+   "환율과 세금은 반영하지 않았습니다. 원화 금액이 미국 자산에 그대로 투입된다고 가정하며, 실제 수익률은 이보다 낮습니다."
   ]
  },
  "leaders": [
@@ -280,67 +273,63 @@
  "defaults": {
   "crash_lookback": 5,
   "crash_threshold": -6.0,
-  "vix_threshold": 45.0,
-  "shelter_days": 20,
+  "vix_threshold": 0.0,
+  "shelter_days": 10,
   "reentry_calm_days": 5,
   "trim_lookback": 60,
   "trim_threshold": -10.0,
   "trim_fraction": 1.0,
-  "gold_weight": 0.0,
   "initial_krw": 10000000,
   "monthly_krw": 500000,
   "cost_bps": 10.0
  },
  "presets": {
-  "optimized": {
-   "label": "최적 (탐색 1위)",
-   "note": "수익·낙폭 모두 단순보유보다 나음. 1980-2005 로만 찾고 2006년 이후로 검증.",
-   "full_cagr": 0.1664,
+  "aggressive": {
+   "label": "공격 (수익 우선) · 기본",
+   "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, -42.8% 짜리 구덩이는 여전히 각오해야 합니다. 매매 연 6.7회.",
+   "full_cagr": 0.1731,
    "full_mdd": -0.428,
    "params": {
     "crash_lookback": 5,
     "crash_threshold": -6.0,
-    "vix_threshold": 45.0,
-    "shelter_days": 20,
+    "vix_threshold": 0.0,
+    "shelter_days": 10,
     "reentry_calm_days": 5,
     "trim_lookback": 60,
     "trim_threshold": -10.0,
-    "trim_fraction": 1.0,
-    "gold_weight": 0.0
+    "trim_fraction": 1.0
    }
   },
-  "aggressive": {
-   "label": "공격 (수익 우선)",
-   "note": "회피를 최소화. 수익은 가장 높지만 낙폭이 -47% 까지 갑니다.",
-   "full_cagr": 0.1715,
-   "full_mdd": -0.474,
+  "lowturn": {
+   "label": "간결 (매매 최소)",
+   "note": "수익을 0.7%p 내주는 대신 매매가 연 3.2회로 절반이고 낙폭도 조금 낮습니다. 손이 덜 가는 쪽을 원하면 이쪽.",
+   "full_cagr": 0.1662,
+   "full_mdd": -0.414,
    "params": {
     "crash_lookback": 5,
-    "crash_threshold": -6.0,
+    "crash_threshold": -8.0,
     "vix_threshold": 0.0,
-    "shelter_days": 20,
-    "reentry_calm_days": 10,
+    "shelter_days": 10,
+    "reentry_calm_days": 20,
     "trim_lookback": 60,
     "trim_threshold": -20.0,
-    "trim_fraction": 1.0,
-    "gold_weight": 0.0
+    "trim_fraction": 1.0
    }
   },
   "defensive": {
    "label": "방어 (낙폭 우선)",
-   "note": "낙폭을 -32% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 수익률은 4%p 포기합니다.",
-   "full_cagr": 0.1243,
-   "full_mdd": -0.322,
+   "note": "낙폭을 -31% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 수익률은 5%p 포기합니다.",
+   "full_cagr": 0.1217,
+   "full_mdd": -0.313,
    "params": {
     "crash_lookback": 5,
     "crash_threshold": -6.0,
     "vix_threshold": 35.0,
     "shelter_days": 60,
-    "reentry_calm_days": 10,
+    "reentry_calm_days": 20,
     "trim_lookback": 60,
     "trim_threshold": -10.0,
-    "trim_fraction": 1.0,
-    "gold_weight": 0.0
+    "trim_fraction": 1.0
    }
   },
   "buyhold": {
@@ -356,8 +345,7 @@
     "reentry_calm_days": 5,
     "trim_lookback": 60,
     "trim_threshold": -999.0,
-    "trim_fraction": 0.0,
-    "gold_weight": 0.0
+    "trim_fraction": 0.0
    }
   }
  },
@@ -412,17 +400,12 @@
    0.3,
    0.5,
    1.0
-  ],
-  "gold_weight": [
-   0.0,
-   0.5,
-   1.0
   ]
  },
  "train_end": "2005-12-31",
  "test_start": "2006-01-01",
  "panel_start": "1980-01-02",
  "panel_end": "2026-08-26",
- "built_at": "2026-08-27T22:42:00",
+ "built_at": "2026-08-27T23:16:15",
  "static": true
 }
