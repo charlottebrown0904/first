@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>엔진 대조 — JS vs Python</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><div class="brand"><span class="dot"></span>
+  <h1>엔진 대조</h1><span class="sub">web/engine.js 와 src/engine.py 가 같은 값을 내는가</span></div></header>
+<main>
+  <div class="box">
+    <p class="hint">기준값은 <code>scripts/verify_js_engine.py</code> 가 파이썬 엔진으로 구운
+      <code>data/verify_ref.json</code> 입니다. 이 페이지는 같은 규칙·기간을 브라우저 엔진으로
+      다시 돌려 상대오차를 잽니다. 시세를 JSON 으로 구울 때 유효숫자를 줄이므로
+      완전히 같은 비트가 나오지는 않습니다 — 판정 기준은 상대오차 1e-6 입니다.</p>
+    <div id="summary"></div>
+    <div class="scroll"><table class="tbl" id="tbl"></table></div>
+  </div>
+</main>
+<script src="engine.js"></script>
+<script>
+const TOL = 1e-6;
+const fmtE = e => e === 0 ? '0' : e.toExponential(1);
+
+(async () => {
+  const [rawPanel, ref] = await Promise.all([
+    fetch('data/panel.json').then(r => r.json()),
+    fetch('data/verify_ref.json').then(r => r.json()),
+  ]);
+  const P = Engine.preparePanel(rawPanel);
+
+  let worst = 0, worstWhere = '', fails = 0, checks = 0;
+  const rows = [];
+
+  for (const c of ref.cases) {
+    const got = {
+      strategy: Engine.run(P, c.params, c.start, c.end),
+      leader: Engine.buyAndHold(P, c.params, 'leader', c.start, c.end),
+      nasdaq: Engine.buyAndHold(P, c.params, 'nasdaq', c.start, c.end),
+    };
+    let caseWorst = 0, caseBad = [];
+
+    for (const [which, exp] of Object.entries(c.expect)) {
+      for (const [k, want] of Object.entries(exp)) {
+        const have = got[which][k];
+        if (typeof want === 'string') {           // mdd_from / mdd_to
+          checks++;
+          if (have !== want) { fails++; caseBad.push(`${which}.${k}: ${have} ≠ ${want}`); }
+          continue;
+        }
+        if (want === null) continue;
+        checks++;
+        const err = Math.abs(want) > 1e-12
+          ? Math.abs(have - want) / Math.abs(want)
+          : Math.abs(have - want);
+        if (!Number.isFinite(err)) { fails++; caseBad.push(`${which}.${k}: ${have} vs ${want}`); continue; }
+        if (err > caseWorst) caseWorst = err;
+        if (err > worst) { worst = err; worstWhere = `${c.name} · ${which}.${k}`; }
+        if (err > TOL) { fails++; caseBad.push(`${which}.${k}: ${have} vs ${want} (${fmtE(err)})`); }
+      }
+    }
+
+    rows.push(`<tr>
+      <td style="text-align:left">${c.name}</td>
+      <td>${(got.strategy.cagr * 100).toFixed(3)}%</td>
+      <td>${(c.expect.strategy.cagr * 100).toFixed(3)}%</td>
+      <td>${(got.strategy.mdd * 100).toFixed(2)}%</td>
+      <td>${Math.round(got.strategy.final_value).toLocaleString()}</td>
+      <td class="${caseWorst > TOL ? 'down' : 'up'}">${fmtE(caseWorst)}</td>
+      <td style="text-align:left">${caseBad.length ? caseBad.join('<br>') : '—'}</td></tr>`);
+  }
+
+  document.getElementById('tbl').innerHTML =
+    `<thead><tr><th>케이스</th><th>JS CAGR</th><th>PY CAGR</th><th>JS MDD</th>
+      <th>JS 최종액</th><th>최대 상대오차</th><th>불일치</th></tr></thead>
+     <tbody>${rows.join('')}</tbody>`;
+
+  document.getElementById('summary').innerHTML = `
+    <div class="verdict ${fails ? 'caution' : ''}">
+      <h4>${fails ? `불일치 ${fails}건` : '전부 일치'}</h4>
+      <ul>
+        <li>검사 ${checks.toLocaleString()}개 · 허용 상대오차 ${TOL.toExponential(0)}</li>
+        <li>최대 상대오차 <b>${fmtE(worst)}</b> ${worstWhere ? `(${worstWhere})` : ''}</li>
+      </ul>
+    </div>`;
+  window.__verify = { fails, checks, worst, worstWhere };
+})().catch(e => {
+  document.getElementById('summary').innerHTML =
+    `<div class="verdict caution"><h4>오류</h4><ul><li>${e.message}</li></ul></div>`;
+  window.__verify = { error: e.message };
+});
+</script>
+</body>
+</html>

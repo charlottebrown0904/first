@@ -279,7 +279,9 @@ def _metrics(dates, equity, twr, w_stock, state, total_contrib,
     eq_mdd, _, _ = _max_drawdown(equity)
     cagr = twr[-1] ** (1 / years) - 1
     vol = float(r.std() * np.sqrt(TRADING_DAYS))
-    neg = r[r < 0]
+    # -1e-12 rather than 0: a day that moved by one part in a trillion is not a
+    # down day, and letting float noise decide flips set membership between runs.
+    neg = r[r < -1e-12]
     downside = float(neg.std() * np.sqrt(TRADING_DAYS)) if len(neg) else float("nan")
 
     yearly = pd.Series(twr, index=dates).resample("YE").last().pct_change().dropna()

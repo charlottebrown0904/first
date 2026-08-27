@@ -1,0 +1,428 @@
+{
+ "provenance": {
+  "provider": "Yahoo Finance (yfinance)",
+  "series": [
+   {
+    "key": "nasdaq",
+    "label": "나스닥 종합지수",
+    "ticker": "^IXIC",
+    "fetched_at": "2026-08-27T21:18:39",
+    "rows": 14006,
+    "first": "1971-02-05",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "vix",
+    "label": "VIX 변동성지수",
+    "ticker": "^VIX",
+    "fetched_at": "2026-08-27T21:18:44",
+    "rows": 9232,
+    "first": "1990-01-02",
+    "last": "2026-08-27"
+   },
+   {
+    "key": "gold",
+    "label": "금 펀드 (CEF, 실물보유)",
+    "ticker": "CEF",
+    "fetched_at": "2026-08-27T21:18:40",
+    "rows": 10178,
+    "first": "1986-04-03",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "bond",
+    "label": "국채 펀드 (FGOVX)",
+    "ticker": "FGOVX",
+    "fetched_at": "2026-08-27T21:18:42",
+    "rows": 11758,
+    "first": "1980-01-02",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "gold_alt",
+    "label": "금 현물 (참고)",
+    "ticker": "GC=F",
+    "fetched_at": "2026-08-27T21:18:10",
+    "rows": 6522,
+    "first": "2000-08-30",
+    "last": "2026-08-27"
+   },
+   {
+    "key": "bond_alt",
+    "label": "美 7-10년 국채 ETF (참고)",
+    "ticker": "IEF",
+    "fetched_at": "2026-08-27T21:18:16",
+    "rows": 6058,
+    "first": "2002-07-30",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "sp500",
+    "label": "S&P 500 (참고)",
+    "ticker": "^GSPC",
+    "fetched_at": "2026-08-27T21:18:24",
+    "rows": 16773,
+    "first": "1960-01-04",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "usdkrw",
+    "label": "원/달러 환율",
+    "ticker": "KRW=X",
+    "fetched_at": "2026-08-27T21:18:17",
+    "rows": 5898,
+    "first": "2003-12-01",
+    "last": "2026-08-27"
+   },
+   {
+    "key": "leader:AAPL",
+    "label": "1등주 이력 – AAPL",
+    "ticker": "AAPL",
+    "fetched_at": "2026-08-27T21:18:45",
+    "rows": 11518,
+    "first": "1980-12-12",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "leader:GE",
+    "label": "1등주 이력 – GE",
+    "ticker": "GE",
+    "fetched_at": "2026-08-27T21:18:47",
+    "rows": 16271,
+    "first": "1962-01-02",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "leader:IBM",
+    "label": "1등주 이력 – IBM",
+    "ticker": "IBM",
+    "fetched_at": "2026-08-27T21:18:49",
+    "rows": 16271,
+    "first": "1962-01-02",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "leader:MSFT",
+    "label": "1등주 이력 – MSFT",
+    "ticker": "MSFT",
+    "fetched_at": "2026-08-27T21:18:50",
+    "rows": 10192,
+    "first": "1986-03-13",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "leader:NVDA",
+    "label": "1등주 이력 – NVDA",
+    "ticker": "NVDA",
+    "fetched_at": "2026-08-27T21:18:51",
+    "rows": 6941,
+    "first": "1999-01-22",
+    "last": "2026-08-26"
+   },
+   {
+    "key": "leader:XOM",
+    "label": "1등주 이력 – XOM",
+    "ticker": "XOM",
+    "fetched_at": "2026-08-27T21:18:53",
+    "rows": 16271,
+    "first": "1962-01-02",
+    "last": "2026-08-26"
+   }
+  ],
+  "leader_note": "미국 시가총액 1위 기업의 역사적 기록. 과거 시총 순위를 제공하는 무료 API 는 존재하지 않으므로, 이 표는 공개된 기업 역사 기록을 바탕으로 큐레이션한 것이며 월 단위 해상도입니다. 교체일 전후 수개월은 실제로 1·2위가 엎치락뒤치락하던 구간이라 날짜에 오차가 있을 수 있습니다. 최신 구간은 src/leaders.py 가 yfinance 실시간 시가총액으로 자동 갱신합니다.",
+  "caveats": [
+   "금 펀드는 신뢰할 수 있는 데이터가 1986-04-03 부터 존재합니다. 그 이전 구간의 회피자산은 100% 국채 펀드로 처리됩니다 (USERX·INIVX 의 1980년대 조정주가가 실제 금 시세와 어긋나 배제).",
+   "VIX 는 1990-01-02 부터 실제 지수이며, 그 이전은 나스닥 21일 실현변동성 × 1.15 로 만든 대용치입니다.",
+   "시총 1위 이력은 무료 API 가 없어 큐레이션 표를 사용하며, 현재 1위만 실시간 시가총액으로 자동 확인합니다."
+  ]
+ },
+ "leaders": [
+  {
+   "from": "1980-01-02",
+   "ticker": "XOM",
+   "name": "Exxon",
+   "why": "2차 오일쇼크로 1980-81 년 미국 시총 1위"
+  },
+  {
+   "from": "1982-01-04",
+   "ticker": "IBM",
+   "name": "IBM",
+   "why": "메인프레임 전성기, 1980 년대 내내 1위"
+  },
+  {
+   "from": "1993-01-04",
+   "ticker": "XOM",
+   "name": "Exxon",
+   "why": "IBM 의 1992-93 년 실적 붕괴로 1위 탈환"
+  },
+  {
+   "from": "1995-01-03",
+   "ticker": "GE",
+   "name": "General Electric",
+   "why": "웰치 시대 GE 가 1위"
+  },
+  {
+   "from": "1998-06-01",
+   "ticker": "MSFT",
+   "name": "Microsoft",
+   "why": "닷컴 버블기 윈도우 독점"
+  },
+  {
+   "from": "2000-04-03",
+   "ticker": "GE",
+   "name": "General Electric",
+   "why": "닷컴 붕괴 후 GE 재등극"
+  },
+  {
+   "from": "2005-01-03",
+   "ticker": "XOM",
+   "name": "Exxon",
+   "why": "유가 상승기, 2011 년까지 1위"
+  },
+  {
+   "from": "2011-08-09",
+   "ticker": "AAPL",
+   "name": "Apple",
+   "why": "아이폰, Exxon 추월"
+  },
+  {
+   "from": "2018-11-26",
+   "ticker": "MSFT",
+   "name": "Microsoft",
+   "why": "클라우드 전환, 애플 추월"
+  },
+  {
+   "from": "2020-01-02",
+   "ticker": "AAPL",
+   "name": "Apple",
+   "why": "애플 재탈환"
+  },
+  {
+   "from": "2024-01-12",
+   "ticker": "MSFT",
+   "name": "Microsoft",
+   "why": "AI 사이클 초반 1위"
+  },
+  {
+   "from": "2024-10-25",
+   "ticker": "NVDA",
+   "name": "NVIDIA",
+   "why": "AI 가속기 수요로 1위"
+  }
+ ],
+ "live_ranking": [
+  {
+   "ticker": "NVDA",
+   "name": "NVIDIA Corporation",
+   "market_cap": 5078174924800.0
+  },
+  {
+   "ticker": "AAPL",
+   "name": "Apple Inc.",
+   "market_cap": 4574545969152.0
+  },
+  {
+   "ticker": "GOOGL",
+   "name": "Alphabet Inc.",
+   "market_cap": 4182637805568.0
+  },
+  {
+   "ticker": "MSFT",
+   "name": "Microsoft Corporation",
+   "market_cap": 3685818040320.0
+  },
+  {
+   "ticker": "AMZN",
+   "name": "Amazon.com, Inc.",
+   "market_cap": 2807461576704.0
+  },
+  {
+   "ticker": "AVGO",
+   "name": "Broadcom Inc.",
+   "market_cap": 1691748007936.0
+  },
+  {
+   "ticker": "META",
+   "name": "Meta Platforms, Inc.",
+   "market_cap": 1467720269824.0
+  },
+  {
+   "ticker": "TSLA",
+   "name": "Tesla, Inc.",
+   "market_cap": 1365832499200.0
+  },
+  {
+   "ticker": "BRK-B",
+   "name": "Berkshire Hathaway Inc. New",
+   "market_cap": 1080865783808.0
+  },
+  {
+   "ticker": "LLY",
+   "name": "Eli Lilly and Company",
+   "market_cap": 1060646158336.0
+  },
+  {
+   "ticker": "JPM",
+   "name": "JP Morgan Chase & Co.",
+   "market_cap": 947643416576.0
+  },
+  {
+   "ticker": "WMT",
+   "name": "Walmart Inc.",
+   "market_cap": 830345904128.0
+  },
+  {
+   "ticker": "XOM",
+   "name": "ExxonMobil Holdings Corporation",
+   "market_cap": 650463346688.0
+  }
+ ],
+ "defaults": {
+  "crash_lookback": 5,
+  "crash_threshold": -6.0,
+  "vix_threshold": 45.0,
+  "shelter_days": 20,
+  "reentry_calm_days": 5,
+  "trim_lookback": 60,
+  "trim_threshold": -10.0,
+  "trim_fraction": 1.0,
+  "gold_weight": 0.0,
+  "initial_krw": 10000000,
+  "monthly_krw": 500000,
+  "cost_bps": 10.0
+ },
+ "presets": {
+  "optimized": {
+   "label": "최적 (탐색 1위)",
+   "note": "수익·낙폭 모두 단순보유보다 나음. 1980-2005 로만 찾고 2006년 이후로 검증.",
+   "full_cagr": 0.1664,
+   "full_mdd": -0.428,
+   "params": {
+    "crash_lookback": 5,
+    "crash_threshold": -6.0,
+    "vix_threshold": 45.0,
+    "shelter_days": 20,
+    "reentry_calm_days": 5,
+    "trim_lookback": 60,
+    "trim_threshold": -10.0,
+    "trim_fraction": 1.0,
+    "gold_weight": 0.0
+   }
+  },
+  "aggressive": {
+   "label": "공격 (수익 우선)",
+   "note": "회피를 최소화. 수익은 가장 높지만 낙폭이 -47% 까지 갑니다.",
+   "full_cagr": 0.1715,
+   "full_mdd": -0.474,
+   "params": {
+    "crash_lookback": 5,
+    "crash_threshold": -6.0,
+    "vix_threshold": 0.0,
+    "shelter_days": 20,
+    "reentry_calm_days": 10,
+    "trim_lookback": 60,
+    "trim_threshold": -20.0,
+    "trim_fraction": 1.0,
+    "gold_weight": 0.0
+   }
+  },
+  "defensive": {
+   "label": "방어 (낙폭 우선)",
+   "note": "낙폭을 -32% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 수익률은 4%p 포기합니다.",
+   "full_cagr": 0.1243,
+   "full_mdd": -0.322,
+   "params": {
+    "crash_lookback": 5,
+    "crash_threshold": -6.0,
+    "vix_threshold": 35.0,
+    "shelter_days": 60,
+    "reentry_calm_days": 10,
+    "trim_lookback": 60,
+    "trim_threshold": -10.0,
+    "trim_fraction": 1.0,
+    "gold_weight": 0.0
+   }
+  },
+  "buyhold": {
+   "label": "비교용: 계속보유",
+   "note": "1등주만 계속 들고 가기. 모든 회피 규칙을 끕니다.",
+   "full_cagr": 0.139,
+   "full_mdd": -0.674,
+   "params": {
+    "crash_lookback": 20,
+    "crash_threshold": -999.0,
+    "vix_threshold": 0.0,
+    "shelter_days": 20,
+    "reentry_calm_days": 5,
+    "trim_lookback": 60,
+    "trim_threshold": -999.0,
+    "trim_fraction": 0.0,
+    "gold_weight": 0.0
+   }
+  }
+ },
+ "grid": {
+  "crash_lookback": [
+   5,
+   10,
+   20,
+   40,
+   60
+  ],
+  "crash_threshold": [
+   -4.0,
+   -6.0,
+   -8.0,
+   -12.0,
+   -16.0,
+   -20.0
+  ],
+  "vix_threshold": [
+   0.0,
+   30.0,
+   35.0,
+   45.0
+  ],
+  "shelter_days": [
+   10,
+   20,
+   40,
+   60,
+   120
+  ],
+  "reentry_calm_days": [
+   5,
+   10,
+   20
+  ],
+  "trim_lookback": [
+   10,
+   60,
+   120,
+   200
+  ],
+  "trim_threshold": [
+   -10.0,
+   -20.0,
+   -30.0,
+   -100.0
+  ],
+  "trim_fraction": [
+   0.0,
+   0.3,
+   0.5,
+   1.0
+  ],
+  "gold_weight": [
+   0.0,
+   0.5,
+   1.0
+  ]
+ },
+ "train_end": "2005-12-31",
+ "test_start": "2006-01-01",
+ "panel_start": "1980-01-02",
+ "panel_end": "2026-08-26",
+ "built_at": "2026-08-27T22:20:09",
+ "static": true
+}
