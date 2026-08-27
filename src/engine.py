@@ -195,11 +195,23 @@ def run(panel: pd.DataFrame, p: Params,
 
             if turnover > value * 0.005:
                 n_trades += 1
+                # Everything a person would want to check afterwards: what was
+                # bought or sold, at what price, what the book looked like after,
+                # and where the account stood against the money paid in so far.
+                stock_delta = want_stock - stock_val
                 trades.append({
                     "date": str(dates[i].date()), "state": state,
                     "leader": str(want_ticker), "target": round(target, 3),
                     "value": round(value), "turnover": round(turnover),
                     "handover": bool(handover),
+                    "side": "매수" if stock_delta > 0 else ("매도" if stock_delta < 0 else "유지"),
+                    "stock_delta": round(stock_delta),
+                    "px_stock": float(ps_want) if ps_want > 0 else None,
+                    "px_bond": float(pb) if pb > 0 else None,
+                    "w_stock": (want_stock / value) if value > 0 else 0.0,
+                    "w_bond": (want_bond / value) if value > 0 else 0.0,
+                    "contributed": round(total_contrib),
+                    "pnl": (value / total_contrib - 1) if total_contrib > 0 else None,
                 })
 
             u_stock = want_stock / ps_want if ps_want > 0 else 0.0

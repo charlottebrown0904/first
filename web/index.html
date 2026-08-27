@@ -144,12 +144,27 @@
     <div class="box">
       <h2>내 현재 보유 비율</h2>
       <p class="hint">보유 금액이나 비율을 입력하세요. 단위는 상관없습니다 — 합계 기준으로 계산합니다.</p>
-      <div class="holdRow two">
-        <label>1등주 <span id="holdLeaderName" class="mono"></span>
-          <input type="number" id="hStock" value="100" min="0" step="any"></label>
-        <label>국채 펀드
-          <input type="number" id="hBond" value="0" min="0" step="any"></label>
-      </div>
+      <table class="tbl holdTbl">
+        <thead><tr>
+          <th>자산</th><th>종목</th><th>내 보유</th><th>현재 비중</th><th>목표 비중</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>1등주</td>
+            <td class="mono" id="hStockTicker">–</td>
+            <td><input type="number" id="hStock" value="100" min="0" step="any"></td>
+            <td class="mono" id="hStockCur">–</td>
+            <td class="mono tgt" id="hStockTgt">–</td>
+          </tr>
+          <tr>
+            <td>국채 펀드</td>
+            <td class="mono" id="hBondTicker">–</td>
+            <td><input type="number" id="hBond" value="0" min="0" step="any"></td>
+            <td class="mono" id="hBondCur">–</td>
+            <td class="mono tgt" id="hBondTgt">–</td>
+          </tr>
+        </tbody>
+      </table>
       <button id="btnCalcAction" class="primary">해야 할 일 계산</button>
     </div>
 
@@ -268,6 +283,10 @@
 
   <div class="box">
     <h2>최근 매매 내역</h2>
+    <p class="hint">최근 80건입니다. <b>매매가</b>는 그날 체결에 쓴 종가이고,
+      <b>비중</b>은 매매를 마친 뒤의 자산 배분입니다.
+      <b>누적 손익률</b>은 그 시점까지 넣은 원금 대비 평가액입니다
+      (적립식이라 연 수익률과는 다릅니다).</p>
     <div class="scroll"><table class="tbl" id="tradeTable"></table></div>
   </div>
 </section>

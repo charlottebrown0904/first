@@ -201,11 +201,22 @@ function run(panel, params, start, end, assetOverride) {
 
       if (turnover > value * 0.005) {
         nTrades++;
+        /* 나중에 확인하고 싶어질 것들을 그대로 남깁니다 — 무엇을 얼마에 사고팔았는지,
+           그 뒤 장부가 어떤 모양이었는지, 그때까지 넣은 돈 대비 어디에 서 있었는지 */
+        const stockDelta = wantStock - stockVal;
         trades.push({
           date: dates[lo + i], state: st, leader: String(wantTicker),
           target: Math.round(target * 1000) / 1000,
           value: Math.round(value), turnover: Math.round(turnover),
           handover: !!handover,
+          side: stockDelta > 0 ? '매수' : (stockDelta < 0 ? '매도' : '유지'),
+          stock_delta: Math.round(stockDelta),
+          px_stock: psWant > 0 ? psWant : null,
+          px_bond: pb > 0 ? pb : null,
+          w_stock: value > 0 ? wantStock / value : 0,
+          w_bond: value > 0 ? wantBond / value : 0,
+          contributed: Math.round(totalContrib),
+          pnl: totalContrib > 0 ? value / totalContrib - 1 : null,
         });
       }
 
