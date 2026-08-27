@@ -16,7 +16,7 @@
      peach on white is a pretty colour and an unreadable number. */
   --accent:#6f9fd8;      --accent-ink:#2f6193;   /* sky   – 주식 / 기본 */
   --accent-soft:#dbe8f7;
-  --accent2:#5fb99a;     --accent2-ink:#2b7a5f;  /* mint  – 국채 / 좋음 */
+  --accent2:#5fb99a;     --accent2-ink:#1f6a4b;  /* mint  – 국채 / 좋음 */
   --accent2-soft:#d9f0e6;
   --shelter:#9b8ed4;     --shelter-ink:#5b4c9b;  /* lavender – 회피 */
   --shelter-soft:#e6e1f7;
@@ -289,3 +289,34 @@ footer strong{color:var(--warn-ink)}
 
 .topActions{display:flex; align-items:center; gap:.7rem}
 .built{font-size:.73rem; color:var(--fg3); font-family:var(--mono)}
+
+/* ── 메인 설명 ─────────────────────────────────────────────── */
+.intro{background:linear-gradient(160deg,#fdfcfa,var(--bg2) 45%)}
+.howList{counter-reset:s; list-style:none; padding:0; margin:.6rem 0 0}
+.howList li{
+  counter-increment:s; position:relative; padding:.45rem 0 .45rem 2.1rem;
+  font-size:.9rem; border-bottom:1px dashed var(--line);
+}
+.howList li:last-child{border-bottom:0}
+.howList li::before{
+  content:counter(s); position:absolute; left:0; top:.5rem;
+  width:1.45rem; height:1.45rem; border-radius:50%;
+  background:var(--accent-soft); color:var(--accent-ink);
+  font-size:.72rem; font-weight:700; display:flex;
+  align-items:center; justify-content:center;
+}
+.howList .flow{
+  display:block; font-family:var(--mono); font-size:.73rem;
+  color:var(--fg3); margin-top:.15rem;
+}
+
+.strengths{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr));
+  gap:.7rem; margin:.5rem 0 .3rem}
+.st{border-radius:11px; padding:.75rem .85rem; border:1px solid var(--line)}
+.st.good{background:var(--accent2-soft); border-color:#bfe4d4}
+.st.bad{background:var(--warn-soft); border-color:#eed9bd}
+.st .stk{font-size:.76rem; font-weight:650; color:var(--fg2)}
+.st .stv{font-size:1.35rem; font-weight:700; font-family:var(--mono); margin:.05rem 0 .2rem}
+.st.good .stv{color:var(--accent2-ink)}
+.st.bad .stv{color:var(--warn-ink)}
+.st .sts{font-size:.76rem; color:var(--fg2); line-height:1.5}
