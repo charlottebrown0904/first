@@ -26,7 +26,52 @@ const esc  = s => String(s ?? '').replace(/[&<>"]/g, c =>
 const CSS = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
 
 /* state shared across tabs */
-const S = { meta: null, params: {}, backtest: null, loaded: {} };
+const S = { meta: null, params: {}, backtest: null, loaded: {}, raw: { page: 1 } };
+
+/* ══════════════════════ global investment settings ═══════════════════ */
+/* Start date, opening amount and monthly top-up are not per-tab knobs - they
+   define the whole simulation, so they live once at the top and every request
+   picks them up from here. Amounts are entered in 만원 because typing
+   10,000,000 by hand is how you end up with 1,000,000. */
+const MAN = 10000;
+
+function settings() {
+  return {
+    start: $('#gStart').value || undefined,
+    end: $('#gEnd').value || undefined,
+    initial_krw: (+$('#gInitial').value || 0) * MAN,
+    monthly_krw: (+$('#gMonthly').value || 0) * MAN,
+  };
+}
+
+/* what every API call sends: the rule + the money + the window */
+function query(extra = {}) {
+  const s = settings();
+  return {
+    ...S.params,
+    initial_krw: s.initial_krw, monthly_krw: s.monthly_krw,
+    start: s.start, end: s.end, ...extra,
+  };
+}
+
+function renderSettingsSummary() {
+  const s = settings();
+  const yrs = (s.start && s.end)
+    ? ((new Date(s.end) - new Date(s.start)) / 3.15576e10).toFixed(1) : '–';
+  const months = Math.max(0, Math.round(yrs * 12));
+  const paid = s.initial_krw + s.monthly_krw * months;
+  $('#setSummary').textContent =
+    `${yrs}년 · 총 납입 예상 ${KRW(paid)}`;
+}
+
+function onSettingsChange() {
+  renderSettingsSummary();
+  S.backtest = null;
+  S.loaded.decades = false;
+  const active = $('.tab.active')?.dataset.tab;
+  if (active === 'backtest') runBacktest();
+  if (active === 'today') loadStatus(S.loaded.holdings);
+}
 
 /* ══════════════════════════════ chart core ═══════════════════════════ */
 /* A small line chart. Hand-rolled so the page has zero external requests. */
@@ -84,7 +129,7 @@ class LineChart {
     ctx.clearRect(0, 0, w, h);
 
     /* shelter bands */
-    ctx.fillStyle = 'rgba(139,92,246,.13)';
+    ctx.fillStyle = 'rgba(155,142,212,.16)';   /* pastel lavender = 회피 */
     const idxOf = d => {
       let lo = 0, hi = this.dates.length - 1;
       while (lo < hi) { const m = (lo + hi) >> 1; this.dates[m] < d ? lo = m + 1 : hi = m; }
@@ -144,8 +189,8 @@ class LineChart {
       const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 18;
       const bh = lines.length * 15 + 10;
       const bx = Math.min(x + 12, w - bw - 4), by = pad.t + 6;
-      ctx.fillStyle = 'rgba(13,17,23,.94)'; ctx.strokeStyle = CSS('--line');
-      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.97)'; ctx.strokeStyle = CSS('--line2');
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 8); ctx.fill(); ctx.stroke();
       ctx.textAlign = 'left';
       lines.forEach((l, i) => {
         ctx.fillStyle = i === 0 ? CSS('--fg2') : rows[i - 1].c;
@@ -195,7 +240,7 @@ function drawRing(cv, target) {
   const segs = [
     { v: target.stock, c: CSS('--accent') },
     { v: target.gold,  c: CSS('--warn') },
-    { v: target.bond,  c: CSS('--accent2') },
+    { v: target.bond,  c: CSS('--accent2') },   /* the ring is a fill, so pastel */
   ].filter(s => s.v > 0.001);
   let a = -Math.PI / 2;
   ctx.lineWidth = 18; ctx.lineCap = 'butt';
@@ -216,11 +261,14 @@ $$('.tab').forEach(t => t.addEventListener('click', () => {
   if (name === 'best' && !S.loaded.best) loadOptimize();
   if (name === 'data' && !S.loaded.data) loadMeta();
   if (name === 'backtest' && !S.backtest) runBacktest();
+  if (name === 'raw' && !S.loaded.raw) loadRaw(1);
 }));
 
 /* ══════════════════════════════ today ════════════════════════════════ */
 async function loadStatus(withHoldings) {
-  const q = { ...S.params };
+  S.loaded.holdings = !!withHoldings;
+  const q = query();
+  delete q.start; delete q.end;            // today's signal always uses all data
   if (withHoldings) {
     q.stock = $('#hStock').value || 0;
     q.gold  = $('#hGold').value || 0;
@@ -294,12 +342,17 @@ const PARAM_LABELS = {
   cost_bps:          ['거래비용 bp', '편도, 10 = 0.1%'],
 };
 
+/* the money and the window live in the global bar, not in the rule grid */
+const GLOBAL_FIELDS = new Set(['initial_krw', 'monthly_krw']);
+
 function buildParamGrid() {
-  $('#paramGrid').innerHTML = Object.entries(S.meta.defaults).map(([k, v]) => {
-    const [label, hint] = PARAM_LABELS[k] || [k, ''];
-    return `<label title="${esc(hint)}">${esc(label)}
-      <input type="number" step="any" data-p="${k}" value="${v}"></label>`;
-  }).join('');
+  $('#paramGrid').innerHTML = Object.entries(S.meta.defaults)
+    .filter(([k]) => !GLOBAL_FIELDS.has(k))
+    .map(([k, v]) => {
+      const [label, hint] = PARAM_LABELS[k] || [k, ''];
+      return `<label title="${esc(hint)}">${esc(label)}
+        <input type="number" step="any" data-p="${k}" value="${v}"></label>`;
+    }).join('');
   $$('#paramGrid input').forEach(i => i.addEventListener('change', () => {
     S.params[i.dataset.p] = i.value;
     $$('.preset').forEach(b => b.classList.remove('on'));   // now a custom rule
@@ -337,11 +390,10 @@ async function runBacktest() {
   st.innerHTML = '<span class="spinner"></span> 계산 중…';
   try {
     S.params = readParams();
-    const d = await api('backtest', {
-      ...S.params, start: $('#btStart').value, end: $('#btEnd').value });
+    const d = await api('backtest', query());
     S.backtest = d;
     renderBacktest(d);
-    st.textContent = `${d.start} ~ ${d.end} (${d.years}년)`;
+    st.textContent = `${d.start} ~ ${d.end} (${d.years}년) · 납입 ${KRW(d.total_contributed)}`;
   } catch (e) { st.textContent = '오류: ' + e.message; }
 }
 
@@ -366,12 +418,13 @@ function renderBacktest(d) {
   $('#btMetrics').innerHTML = metricCards(d);
 
   const c = d.curves;
-  const colors = { s: CSS('--accent'), b: CSS('--down'), n: CSS('--fg3') };
+  const colors = { s: CSS('--accent-ink'), b: CSS('--down-ink'), n: CSS('--fg3') };
+  // strategy in sky, buy&hold in coral, index in grey - all pastel-weight
   $('#chartLegend').innerHTML =
     `<span><i style="background:${colors.s}"></i>전략</span>
      <span><i style="background:${colors.b}"></i>1등주 계속보유</span>
      <span><i style="background:${colors.n}"></i>나스닥</span>
-     <span><i style="background:rgba(139,92,246,.5)"></i>회피 구간</span>`;
+     <span><i style="background:rgba(155,142,212,.55)"></i>회피 구간</span>`;
 
   if (!mainChart) {
     mainChart = new LineChart($('#mainChart'), {
@@ -445,7 +498,7 @@ function drawYearBars(d) {
   }
   rets.forEach(([yy, v], i) => {
     const x = pad.l + i * bw;
-    ctx.fillStyle = v >= 0 ? CSS('--up') : CSS('--down');
+    ctx.fillStyle = v >= 0 ? CSS('--up') : CSS('--down');   /* bars are fills */
     ctx.fillRect(x + bw * .12, Math.min(y(v), y(0)), bw * .5, Math.abs(y(v) - y(0)));
     ctx.strokeStyle = CSS('--fg3'); ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -463,7 +516,8 @@ async function loadDecades() {
   const el = $('#decadeTable');
   el.innerHTML = '<tbody><tr><td><span class="spinner"></span></td></tr></tbody>';
   try {
-    const d = await api('decades', S.params);
+    const q = query(); delete q.start; delete q.end;
+    const d = await api('decades', q);
     el.innerHTML =
       `<thead><tr><th>기간</th><th>그때의 1등주</th><th>전략 CAGR</th><th>계속보유 CAGR</th>
         <th>수익 차이</th><th>전략 MDD</th><th>계속보유 MDD</th><th>낙폭 절감</th>
@@ -484,7 +538,7 @@ async function loadPoint(date) {
   $('#pointDate').textContent = date;
   $('#pointMetrics').innerHTML = '<div class="metric"><div class="v"><span class="spinner"></span></div></div>';
   try {
-    const d = await api('point', { ...S.params, start: date });
+    const d = await api('point', { ...query(), start: date, end: undefined });
     const rows = [['전략', d.strategy], ['1등주 계속보유', d.buy_and_hold], ['나스닥', d.nasdaq]];
     $('#pointMetrics').innerHTML = rows.map(([n, r]) =>
       `<div class="metric"><div class="k">${n}</div>
@@ -507,7 +561,8 @@ $('#btnTimeline').addEventListener('click', async () => {
   const st = $('#tlStatus');
   st.innerHTML = '<span class="spinner"></span> 연도별로 계산 중…';
   try {
-    const d = await api('timeline', readParams());
+    const q = query(); delete q.start;
+    const d = await api('timeline', q);
     $('#timelineTable').innerHTML =
       `<thead><tr><th>시작 연도</th><th>기간</th><th>납입 원금</th><th>전략 평가액</th>
         <th>전략 CAGR</th><th>전략 MDD</th><th>계속보유 평가액</th><th>계속보유 CAGR</th>
@@ -527,6 +582,100 @@ $('#btnTimeline').addEventListener('click', async () => {
     }));
     st.textContent = `${d.rows.length}개 시작 시점`;
   } catch (e) { st.textContent = '오류: ' + e.message; }
+});
+
+/* ══════════════════════════════ raw data ═════════════════════════════ */
+/* Five indicators × (close, day-over-day, drawdown from peak). The peak column
+   is the one worth reading: it says how far below its own record each series
+   currently sits, which is exactly what the trading rules are watching. */
+const RAW_GROUPS = [
+  { key: 'nasdaq', label: '나스닥 지수', cls: 'nq', dp: 2 },
+  { key: 'vix',    label: 'VIX',        cls: 'vx', dp: 2 },
+  { key: 'leader', label: '1등주',       cls: 'ld', dp: 2 },
+  { key: 'gold',   label: '금 펀드',     cls: 'gd', dp: 2 },
+  { key: 'bond',   label: '국채 펀드',   cls: 'bd', dp: 2 },
+];
+
+/* a tiny inline bar so depth-below-peak reads at a glance, not digit by digit */
+const peakCell = v => {
+  if (v == null) return '<td class="sep">–</td>';
+  const w = Math.min(46, Math.abs(v) * 0.62);
+  return `<td class="sep ${v < -0.005 ? 'down' : ''}">${v.toFixed(2)}%` +
+    (w > 0.5 ? `<span class="peakbar" style="width:${w}px"></span>` : '') + '</td>';
+};
+
+async function loadRaw(page) {
+  S.loaded.raw = true;
+  S.raw.page = page;
+  const st = $('#rawStatus');
+  st.innerHTML = '<span class="spinner"></span> 불러오는 중…';
+  try {
+    const d = await api('raw', {
+      ...S.params,
+      start: $('#rawStart').value || undefined,
+      end: $('#rawEnd').value || undefined,
+      page, per_page: $('#rawPer').value,
+    });
+    S.raw = { ...S.raw, ...d };
+    renderRaw(d);
+    st.textContent = `${d.total.toLocaleString()}행 중 ${d.page}/${d.pages} 페이지` +
+      (d.range ? ` · ${d.range[0]} ~ ${d.range[1]}` : '');
+  } catch (e) { st.textContent = '오류: ' + e.message; }
+}
+
+function renderRaw(d) {
+  const head =
+    `<thead>
+      <tr><th rowspan="2">날짜</th><th rowspan="2">신호</th>` +
+      RAW_GROUPS.map(g => `<th class="grp ${g.cls} sep" colspan="3">${esc(g.label)}</th>`).join('') +
+    `</tr><tr>` +
+      RAW_GROUPS.map(() => `<th class="sep">종가</th><th>전일 대비</th><th>최고점 대비</th>`).join('') +
+    `</tr></thead>`;
+
+  const body = d.rows.map(r => {
+    const sig = r.shock ? 'sig' : r.trim ? 'sig' : '';
+    const badge = [
+      r.shock ? '<span class="dot-sig s" title="회피 신호"></span>' : '',
+      r.trim ? '<span class="dot-sig t" title="1등주 급락 신호"></span>' : '',
+    ].join('') || '<span style="color:var(--fg3)">·</span>';
+
+    const cells = RAW_GROUPS.map(g => {
+      const close = r[g.key === 'leader' ? 'leader_px' : g.key];
+      const chg = r[`${g.key}_chg`], pk = r[`${g.key}_peak`];
+      const name = g.key === 'leader'
+        ? ` <span class="tag">${esc(r.leader)}</span>` : '';
+      const proxy = g.key === 'vix' && r.vix_is_proxy
+        ? ' <span class="tag proxy">대용</span>' : '';
+      return `<td class="sep">${close == null ? '–' : close.toLocaleString()}${name}${proxy}</td>
+              <td class="${cls(chg)}">${chg == null ? '–' : sgn(chg)}</td>` + peakCell(pk);
+    }).join('');
+
+    return `<tr class="${sig}"><td>${r.date}</td><td>${badge}</td>${cells}</tr>`;
+  }).join('');
+
+  $('#rawTable').innerHTML = head + `<tbody>${body}</tbody>`;
+
+  const P = d.pages, p = d.page;
+  $('#rawPager').innerHTML =
+    `<button ${p <= 1 ? 'disabled' : ''} data-go="1">« 처음</button>
+     <button ${p <= 1 ? 'disabled' : ''} data-go="${p - 1}">‹ 이전</button>
+     <span>페이지</span><input type="number" id="rawJump" value="${p}" min="1" max="${P}">
+     <span>/ ${P.toLocaleString()}</span>
+     <button ${p >= P ? 'disabled' : ''} data-go="${p + 1}">다음 ›</button>
+     <button ${p >= P ? 'disabled' : ''} data-go="${P}">마지막 »</button>`;
+  $$('#rawPager button[data-go]').forEach(b =>
+    b.addEventListener('click', () => loadRaw(Math.max(1, Math.min(P, +b.dataset.go)))));
+  $('#rawJump').addEventListener('change', e =>
+    loadRaw(Math.max(1, Math.min(P, +e.target.value || 1))));
+}
+
+$('#rawLoad').addEventListener('click', () => loadRaw(1));
+$('#rawPer').addEventListener('change', () => loadRaw(1));
+$('#rawCsv').addEventListener('click', () => {
+  const q = new URLSearchParams();
+  if ($('#rawStart').value) q.set('start', $('#rawStart').value);
+  if ($('#rawEnd').value) q.set('end', $('#rawEnd').value);
+  window.location = '/api/raw.csv' + (q.toString() ? '?' + q : '');
 });
 
 /* ══════════════════════════════ optimize ═════════════════════════════ */
@@ -671,22 +820,22 @@ function renderFrontier(d) {
 
   /* connect the frontier */
   const sorted = [...pts].sort((a, b) => a.x - b.x);
-  ctx.strokeStyle = 'rgba(126,224,192,.35)'; ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(95,185,154,.5)'; ctx.lineWidth = 1.5;
   ctx.beginPath();
   sorted.forEach((p, i) => i ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y)));
   ctx.stroke();
 
   for (const p of sorted) {
-    ctx.fillStyle = CSS('--accent2');
+    ctx.fillStyle = CSS('--accent2-ink');
     ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), 5, 0, 7); ctx.fill();
   }
   if (bh) {
-    ctx.strokeStyle = CSS('--down'); ctx.lineWidth = 2.2;
+    ctx.strokeStyle = CSS('--down-ink'); ctx.lineWidth = 2.2;
     const bx = X(bh.mdd), by = Y(bh.cagr);
     ctx.beginPath();
     ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx + 6, by + 6);
     ctx.moveTo(bx + 6, by - 6); ctx.lineTo(bx - 6, by + 6); ctx.stroke();
-    ctx.fillStyle = CSS('--down'); ctx.textAlign = 'left';
+    ctx.fillStyle = CSS('--down-ink'); ctx.textAlign = 'left';
     ctx.fillText('계속보유', bx + 10, by + 4);
   }
 }
@@ -727,17 +876,47 @@ $('#btnRefresh').addEventListener('click', async () => {
   } catch (e) { showErr(e); b.disabled = false; b.textContent = '시세 새로 받기'; }
 });
 
+function wireSettings() {
+  const { panel_start: lo, panel_end: hi } = S.meta;
+  for (const id of ['#gStart', '#gEnd', '#rawStart', '#rawEnd']) {
+    $(id).min = lo; $(id).max = hi;
+  }
+  $('#gStart').value = lo;
+  $('#gEnd').value = hi;
+  // the raw tab opens on the most recent year rather than 46 years of rows
+  $('#rawStart').value = new Date(new Date(hi) - 3.15576e10).toISOString().slice(0, 10);
+  $('#rawEnd').value = hi;
+
+  $('#gInitial').value = Math.round(S.meta.defaults.initial_krw / MAN);
+  $('#gMonthly').value = Math.round(S.meta.defaults.monthly_krw / MAN);
+
+  ['#gStart', '#gEnd', '#gInitial', '#gMonthly'].forEach(id =>
+    $(id).addEventListener('change', () => {
+      $$('#quickRange button').forEach(b => b.classList.remove('on'));
+      onSettingsChange();
+    }));
+
+  $$('#quickRange button').forEach(b => b.addEventListener('click', () => {
+    const y = +b.dataset.years;
+    $('#gEnd').value = hi;
+    $('#gStart').value = y === 0 ? lo
+      : new Date(Math.max(new Date(lo), new Date(hi) - y * 3.15576e10))
+          .toISOString().slice(0, 10);
+    $$('#quickRange button').forEach(x => x.classList.toggle('on', x === b));
+    onSettingsChange();
+  }));
+
+  $$('#quickRange button')[0].classList.add('on');
+  renderSettingsSummary();
+}
+
 (async function boot() {
   try {
     S.meta = await api('meta');
     S.params = { ...S.meta.defaults };
-    $('#panelRange').textContent =
-      `${S.meta.panel_start} ~ ${S.meta.panel_end}`;
+    $('#panelRange').textContent = `${S.meta.panel_start} ~ ${S.meta.panel_end}`;
     buildParamGrid();
-    $('#btStart').value = S.meta.panel_start;
-    $('#btEnd').value = S.meta.panel_end;
-    $('#btStart').min = $('#btEnd').min = S.meta.panel_start;
-    $('#btStart').max = $('#btEnd').max = S.meta.panel_end;
+    wireSettings();
     await loadStatus(false);
   } catch (e) { showErr(e); }
 })();

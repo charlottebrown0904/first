@@ -24,14 +24,58 @@ app.json.sort_keys = False
 
 _lock = threading.Lock()
 _panel: pd.DataFrame | None = None
+_raw: pd.DataFrame | None = None
 
 
 def panel(force: bool = False) -> pd.DataFrame:
-    global _panel
+    global _panel, _raw
     with _lock:
         if _panel is None or force:
             _panel = datasource.build_panel(force=force)
+            _raw = None                       # peaks must be rebuilt with it
         return _panel
+
+
+def raw_table() -> pd.DataFrame:
+    """Per-day closes with day-over-day and drawdown-from-peak for each series.
+
+    Peaks are running maxima over the *whole* record, not over whatever window
+    the user is looking at, so "최고점 대비" means the same thing on every page.
+    Built once and cached because cummax over 11k rows per ticker is not free.
+    """
+    global _raw
+    pn = panel()
+    with _lock:
+        if _raw is not None:
+            return _raw
+
+        df = pd.DataFrame(index=pn.index)
+        for col in ("nasdaq", "vix", "gold", "bond"):
+            s = pn[col]
+            df[col] = s
+            df[f"{col}_chg"] = s.pct_change() * 100
+            df[f"{col}_peak"] = (s / s.cummax() - 1) * 100
+
+        # The #1 stock changes identity, so both columns are computed per ticker
+        # against that ticker's own history - never across a handover.
+        df["leader"] = pn["leader"]
+        df["leader_px"] = pn["leader_px"]
+        chg = pd.Series(np.nan, index=pn.index)
+        peak = pd.Series(np.nan, index=pn.index)
+        for t in pd.unique(pn["leader"]):
+            if t not in pn.columns:
+                continue
+            s = pn[t]
+            mask = (pn["leader"] == t).to_numpy()
+            chg[mask] = (s.pct_change() * 100)[mask]
+            peak[mask] = ((s / s.cummax() - 1) * 100)[mask]
+        df["leader_chg"] = chg
+        df["leader_peak"] = peak
+        df["vix_is_proxy"] = pn["vix_is_proxy"]
+        df["gold_available"] = pn["gold_available"]
+
+        _raw = df
+        return _raw
 
 
 def params_from_query() -> Params:
@@ -197,6 +241,72 @@ def api_optimize():
         return jsonify({"error": "아직 최적화 결과가 없습니다. "
                                  "python scripts/optimize_run.py 를 먼저 실행하세요."}), 404
     return jsonify(_clean(res))
+
+
+@app.get("/api/raw")
+def api_raw():
+    """날짜별 원자료. 최신 날짜가 먼저 옵니다."""
+    p = params_from_query()
+    df = raw_table()
+    start = request.args.get("start") or None
+    end = request.args.get("end") or None
+    if start or end:
+        df = df.loc[start:end]
+
+    sig = engine._shift_signals(engine.build_signals(panel(), p)).reindex(df.index)
+
+    try:
+        page = max(1, int(request.args.get("page") or 1))
+        per = min(500, max(10, int(request.args.get("per_page") or 100)))
+    except ValueError:
+        page, per = 1, 100
+
+    total = len(df)
+    view = df.iloc[::-1]                                   # newest first
+    chunk = view.iloc[(page - 1) * per: page * per]
+    s = sig.reindex(chunk.index)
+
+    def num(v, nd=2):
+        return None if v is None or not np.isfinite(v) else round(float(v), nd)
+
+    rows = []
+    for d, r in chunk.iterrows():
+        rows.append({
+            "date": str(d.date()),
+            "nasdaq": num(r["nasdaq"]), "nasdaq_chg": num(r["nasdaq_chg"]),
+            "nasdaq_peak": num(r["nasdaq_peak"]),
+            "vix": num(r["vix"]), "vix_chg": num(r["vix_chg"]),
+            "vix_peak": num(r["vix_peak"]), "vix_is_proxy": bool(r["vix_is_proxy"]),
+            "leader": str(r["leader"]), "leader_px": num(r["leader_px"]),
+            "leader_chg": num(r["leader_chg"]), "leader_peak": num(r["leader_peak"]),
+            "gold": num(r["gold"]), "gold_chg": num(r["gold_chg"]),
+            "gold_peak": num(r["gold_peak"]),
+            "bond": num(r["bond"]), "bond_chg": num(r["bond_chg"]),
+            "bond_peak": num(r["bond_peak"]),
+            "shock": bool(s.at[d, "shock"]) if d in s.index else False,
+            "trim": bool(s.at[d, "trim"]) if d in s.index else False,
+        })
+
+    return jsonify(_clean({
+        "rows": rows, "total": total, "page": page, "per_page": per,
+        "pages": max(1, -(-total // per)),
+        "range": [str(df.index[0].date()), str(df.index[-1].date())] if total else None,
+    }))
+
+
+@app.get("/api/raw.csv")
+def api_raw_csv():
+    df = raw_table()
+    start = request.args.get("start") or None
+    end = request.args.get("end") or None
+    if start or end:
+        df = df.loc[start:end]
+    out = df.drop(columns=["vix_is_proxy", "gold_available"]).round(4)
+    out.index.name = "date"
+    return (out.to_csv(), 200, {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="indicators.csv"',
+    })
 
 
 @app.get("/api/decades")

@@ -19,11 +19,36 @@
   </div>
 </header>
 
+<div class="settings">
+  <div class="settingsInner">
+    <label class="setField"><span>시작일</span>
+      <input type="date" id="gStart"></label>
+    <label class="setField"><span>종료일</span>
+      <input type="date" id="gEnd"></label>
+    <div class="setField" style="min-width:auto">
+      <span>기간 빠른 선택</span>
+      <div class="quick" id="quickRange">
+        <button data-years="0">전체</button>
+        <button data-years="30">30년</button>
+        <button data-years="20">20년</button>
+        <button data-years="10">10년</button>
+        <button data-years="5">5년</button>
+      </div>
+    </div>
+    <label class="setField"><span>시작 투자금</span>
+      <div class="unit"><input type="number" id="gInitial" min="0" step="10" value="1000"><em>만원</em></div></label>
+    <label class="setField"><span>매월 적립금</span>
+      <div class="unit"><input type="number" id="gMonthly" min="0" step="10" value="50"><em>만원</em></div></label>
+    <div class="setSummary" id="setSummary">–</div>
+  </div>
+</div>
+
 <nav class="tabs">
   <button class="tab active" data-tab="today">오늘 할 일</button>
   <button class="tab" data-tab="backtest">백테스트</button>
   <button class="tab" data-tab="timeline">시점별 수익률</button>
   <button class="tab" data-tab="best">최적 매매법</button>
+  <button class="tab" data-tab="raw">원자료</button>
   <button class="tab" data-tab="data">데이터 출처</button>
 </nav>
 
@@ -85,12 +110,11 @@
     <p class="hint" id="presetNote"></p>
     <div class="grid" id="paramGrid"></div>
     <div class="ctlRow">
-      <label>시작일 <input type="date" id="btStart"></label>
-      <label>종료일 <input type="date" id="btEnd"></label>
       <button id="btnRun" class="primary">백테스트 실행</button>
-      <button id="btnReset" class="ghost">기본값</button>
+      <button id="btnReset" class="ghost">규칙 기본값</button>
       <span class="hint" id="btStatus"></span>
     </div>
+    <p class="hint">기간·투자금·적립금은 위쪽 <b>공통 설정</b>에서 바꿉니다.</p>
   </div>
 
   <div class="metrics" id="btMetrics"></div>
@@ -163,6 +187,38 @@
   <div class="box">
     <h2>아무것도 하지 않았다면 (벤치마크)</h2>
     <div class="scroll"><table class="tbl" id="benchTable"></table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ 원자료 ═════════════════════════ -->
+<section class="panel" id="tab-raw">
+  <div class="box">
+    <h2>날짜별 지표 원자료</h2>
+    <p class="hint">모든 값은 <b>종가</b> 기준입니다. 각 지표마다 종가 · <b>전일 대비</b> ·
+      <b>최고점 대비</b>(그 지표의 역대 최고 종가 대비 몇 % 아래인지)를 보여줍니다.
+      1등주는 종목이 바뀌므로 <b>해당 종목 자신의 기록</b>에 대해 계산합니다.
+      최고점은 보고 있는 구간이 아니라 <b>전체 기록</b> 기준이라, 페이지를 넘겨도 뜻이 같습니다.</p>
+    <div class="rawBar">
+      <label class="setField"><span>표시 시작일</span><input type="date" id="rawStart"></label>
+      <label class="setField"><span>표시 종료일</span><input type="date" id="rawEnd"></label>
+      <label class="setField"><span>한 페이지</span>
+        <select id="rawPer">
+          <option value="50">50행</option>
+          <option value="100" selected>100행</option>
+          <option value="250">250행</option>
+          <option value="500">500행</option>
+        </select></label>
+      <button id="rawLoad" class="primary">불러오기</button>
+      <button id="rawCsv" class="ghost">CSV 내려받기</button>
+      <span class="hint" id="rawStatus"></span>
+    </div>
+    <p class="hint">
+      <span class="dot-sig s"></span>보라색 행 = 그날 종가 기준 <b>회피 신호</b>,
+      <span class="dot-sig t"></span>붉은 행 = <b>1등주 급락 신호</b>.
+      신호는 위쪽 매매 규칙 설정을 따릅니다.
+    </p>
+    <div class="scroll"><table class="tbl" id="rawTable"></table></div>
+    <div class="pager" id="rawPager"></div>
   </div>
 </section>
 
