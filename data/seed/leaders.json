@@ -1,0 +1,17 @@
+{
+  "source_note": "미국 시가총액 1위 기업의 역사적 기록. 과거 시총 순위를 제공하는 무료 API 는 존재하지 않으므로, 이 표는 공개된 기업 역사 기록을 바탕으로 큐레이션한 것이며 월 단위 해상도입니다. 교체일 전후 수개월은 실제로 1·2위가 엎치락뒤치락하던 구간이라 날짜에 오차가 있을 수 있습니다. 최신 구간은 src/leaders.py 가 yfinance 실시간 시가총액으로 자동 갱신합니다.",
+  "timeline": [
+    {"from": "1980-01-02", "ticker": "XOM",  "name": "Exxon",     "why": "2차 오일쇼크로 1980-81 년 미국 시총 1위"},
+    {"from": "1982-01-04", "ticker": "IBM",  "name": "IBM",       "why": "메인프레임 전성기, 1980 년대 내내 1위"},
+    {"from": "1993-01-04", "ticker": "XOM",  "name": "Exxon",     "why": "IBM 의 1992-93 년 실적 붕괴로 1위 탈환"},
+    {"from": "1995-01-03", "ticker": "GE",   "name": "General Electric", "why": "웰치 시대 GE 가 1위"},
+    {"from": "1998-06-01", "ticker": "MSFT", "name": "Microsoft", "why": "닷컴 버블기 윈도우 독점"},
+    {"from": "2000-04-03", "ticker": "GE",   "name": "General Electric", "why": "닷컴 붕괴 후 GE 재등극"},
+    {"from": "2005-01-03", "ticker": "XOM",  "name": "Exxon",     "why": "유가 상승기, 2011 년까지 1위"},
+    {"from": "2011-08-09", "ticker": "AAPL", "name": "Apple",     "why": "아이폰, Exxon 추월"},
+    {"from": "2018-11-26", "ticker": "MSFT", "name": "Microsoft", "why": "클라우드 전환, 애플 추월"},
+    {"from": "2020-01-02", "ticker": "AAPL", "name": "Apple",     "why": "애플 재탈환"},
+    {"from": "2024-01-12", "ticker": "MSFT", "name": "Microsoft", "why": "AI 사이클 초반 1위"},
+    {"from": "2024-10-25", "ticker": "NVDA", "name": "NVIDIA",    "why": "AI 가속기 수요로 1위"}
+  ]
+}

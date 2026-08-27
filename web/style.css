@@ -1,0 +1,191 @@
+:root{
+  --bg:#0d1117; --bg2:#161b22; --bg3:#1c2330; --line:#2a3242;
+  --fg:#e6edf3; --fg2:#9aa7b8; --fg3:#6b7787;
+  --accent:#4d9fff; --accent2:#7ee0c0;
+  --up:#3fb950; --down:#f85149; --warn:#e3b341; --shelter:#8b5cf6;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",
+    "Apple SD Gothic Neo",system-ui,sans-serif;
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0 0 .5rem; font-weight:650; letter-spacing:-.01em}
+h1{font-size:1.15rem}
+h2{font-size:1rem; color:var(--fg)}
+h3{font-size:.85rem; color:var(--fg2); margin-top:1rem}
+.mono{font-family:var(--mono)}
+.hint{color:var(--fg3); font-size:.82rem; margin:.25rem 0 .75rem}
+
+/* ── top bar ───────────────────────────────────────────────── */
+.topbar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:.85rem 1.5rem; border-bottom:1px solid var(--line);
+  background:var(--bg2); position:sticky; top:0; z-index:30;
+}
+.brand{display:flex; align-items:center; gap:.7rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent2);
+  box-shadow:0 0 10px var(--accent2)}
+.brand .sub{color:var(--fg3); font-size:.78rem; font-family:var(--mono)}
+
+/* ── tabs ──────────────────────────────────────────────────── */
+.tabs{
+  display:flex; gap:.25rem; padding:0 1.5rem; background:var(--bg2);
+  border-bottom:1px solid var(--line); position:sticky; top:57px; z-index:29;
+  overflow-x:auto;
+}
+.tab{
+  background:none; border:0; border-bottom:2px solid transparent;
+  color:var(--fg3); padding:.6rem .9rem; cursor:pointer; font-size:.88rem;
+  font-family:inherit; white-space:nowrap;
+}
+.tab:hover{color:var(--fg2)}
+.tab.active{color:var(--fg); border-bottom-color:var(--accent)}
+
+main{max-width:1180px; margin:0 auto; padding:1.5rem}
+.panel{display:none}
+.panel.active{display:block}
+
+.box{
+  background:var(--bg2); border:1px solid var(--line); border-radius:10px;
+  padding:1.1rem 1.2rem; margin-bottom:1.1rem;
+}
+.box.warn{border-color:#5a4a1e; background:#1d1a10}
+.split{display:grid; grid-template-columns:1fr 1fr; gap:1.1rem}
+@media(max-width:860px){.split{grid-template-columns:1fr}}
+
+/* ── state hero ────────────────────────────────────────────── */
+.stateHero{
+  display:flex; align-items:center; gap:1.4rem; flex-wrap:wrap;
+  background:linear-gradient(135deg,var(--bg3),var(--bg2));
+  border:1px solid var(--line); border-radius:12px; padding:1.3rem 1.4rem;
+  margin-bottom:1.1rem;
+}
+.stateBadge{
+  font-size:1.35rem; font-weight:700; padding:.7rem 1.3rem; border-radius:10px;
+  background:var(--bg); border:2px solid var(--accent); color:var(--accent);
+  white-space:nowrap;
+}
+.stateBadge.shelter{border-color:var(--shelter); color:var(--shelter)}
+.stateBadge.partial{border-color:var(--warn); color:var(--warn)}
+.stateText{flex:1; min-width:260px}
+.stateLine{font-size:1.05rem; font-weight:600}
+.stateMeta{color:var(--fg3); font-size:.82rem; font-family:var(--mono); margin-top:.3rem}
+.targetRing{position:relative; width:180px; height:180px}
+.ringLabel{
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; pointer-events:none;
+}
+.ringLabel span{font-size:1.7rem; font-weight:700; font-family:var(--mono)}
+.ringLabel small{color:var(--fg3); font-size:.7rem}
+
+/* ── indicator cards ───────────────────────────────────────── */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:.8rem; margin-bottom:1.1rem}
+.card{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:.9rem}
+.card.hit{border-color:var(--down); box-shadow:0 0 0 1px var(--down) inset}
+.card .k{color:var(--fg3); font-size:.75rem}
+.card .v{font-size:1.4rem; font-weight:700; font-family:var(--mono); margin:.15rem 0}
+.card .d{font-size:.78rem; font-family:var(--mono)}
+.card .rule{color:var(--fg3); font-size:.72rem; margin-top:.45rem;
+  border-top:1px solid var(--line); padding-top:.4rem}
+.up{color:var(--up)} .down{color:var(--down)} .warnc{color:var(--warn)}
+.tag{display:inline-block; font-size:.68rem; padding:.05rem .4rem; border-radius:4px;
+  background:var(--bg3); color:var(--fg3); margin-left:.3rem}
+
+/* ── holdings + actions ────────────────────────────────────── */
+.holdRow{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:.8rem}
+.holdRow label,.ctlRow label,.grid label{
+  display:flex; flex-direction:column; gap:.25rem; font-size:.78rem; color:var(--fg2)}
+input,select{
+  background:var(--bg); border:1px solid var(--line); color:var(--fg);
+  border-radius:6px; padding:.42rem .55rem; font-family:var(--mono); font-size:.85rem;
+  width:100%;
+}
+input:focus,select:focus{outline:none; border-color:var(--accent)}
+button{font-family:inherit; cursor:pointer; border-radius:6px; font-size:.85rem;
+  padding:.5rem .95rem; border:1px solid var(--line)}
+button.primary{background:var(--accent); border-color:var(--accent); color:#04121f; font-weight:600}
+button.primary:hover{filter:brightness(1.1)}
+button.ghost{background:transparent; color:var(--fg2)}
+button.ghost:hover{color:var(--fg); border-color:var(--fg3)}
+
+.actions{list-style:none; padding:0; margin:0}
+.actions li{
+  padding:.6rem .75rem; border-radius:7px; margin-bottom:.45rem; font-size:.88rem;
+  border-left:3px solid var(--fg3); background:var(--bg3);
+}
+.actions li.buy{border-left-color:var(--up)}
+.actions li.sell{border-left-color:var(--down)}
+.actions li.hold{border-left-color:var(--accent2)}
+.reasons{margin:.3rem 0 0; padding-left:1.1rem; color:var(--fg2); font-size:.82rem}
+.reasons li{margin-bottom:.25rem}
+
+/* ── metrics ───────────────────────────────────────────────── */
+.metrics{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:.7rem; margin-bottom:1.1rem}
+.metric{background:var(--bg2); border:1px solid var(--line); border-radius:9px; padding:.75rem .85rem}
+.metric .k{color:var(--fg3); font-size:.72rem}
+.metric .v{font-size:1.15rem; font-weight:700; font-family:var(--mono)}
+.metric .s{font-size:.72rem; color:var(--fg3); font-family:var(--mono)}
+
+/* ── charts ────────────────────────────────────────────────── */
+.chartHead{display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:.6rem}
+.chartHead h2{margin:0}
+.legend{display:flex; gap:.8rem; flex-wrap:wrap; font-size:.76rem; color:var(--fg2)}
+.legend i{display:inline-block; width:12px; height:3px; border-radius:2px;
+  margin-right:.3rem; vertical-align:middle}
+.chk{font-size:.78rem; color:var(--fg2); display:flex; align-items:center; gap:.3rem}
+.chk input{width:auto}
+canvas{width:100%; display:block; cursor:crosshair}
+
+/* ── tables ────────────────────────────────────────────────── */
+.scroll{overflow-x:auto}
+.tbl{width:100%; border-collapse:collapse; font-size:.82rem}
+.tbl th,.tbl td{padding:.42rem .6rem; text-align:right; border-bottom:1px solid var(--line);
+  white-space:nowrap}
+.tbl th{color:var(--fg3); font-weight:600; font-size:.74rem; text-align:right;
+  position:sticky; top:0; background:var(--bg2)}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl td{font-family:var(--mono)}
+.tbl tbody tr:hover{background:var(--bg3)}
+.tbl tr.clickable{cursor:pointer}
+.tbl tr.best td{background:#122a1c}
+
+.controls .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:.6rem; margin-bottom:.9rem}
+.ctlRow{display:flex; gap:.7rem; align-items:flex-end; flex-wrap:wrap}
+
+footer{
+  border-top:1px solid var(--line); margin-top:2rem; padding:1.2rem 1.5rem;
+  color:var(--fg3); font-size:.78rem; background:var(--bg2);
+}
+footer strong{color:var(--warn)}
+.spinner{display:inline-block; width:11px; height:11px; border:2px solid var(--line);
+  border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── presets ───────────────────────────────────────────────── */
+.presets{display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.4rem}
+.preset{
+  background:var(--bg3); border:1px solid var(--line); color:var(--fg2);
+  padding:.45rem .8rem; border-radius:20px; font-size:.8rem;
+}
+.preset:hover{color:var(--fg); border-color:var(--fg3)}
+.preset.on{background:var(--accent); border-color:var(--accent); color:#04121f; font-weight:600}
+.preset small{display:block; font-size:.68rem; opacity:.75; font-family:var(--mono)}
+
+/* ── verdict callout ───────────────────────────────────────── */
+.verdict{border-left:3px solid var(--accent); background:var(--bg3);
+  padding:.85rem 1rem; border-radius:0 8px 8px 0; margin:.8rem 0; font-size:.87rem}
+.verdict h4{margin:0 0 .4rem; font-size:.88rem; color:var(--accent)}
+.verdict.caution{border-left-color:var(--warn)}
+.verdict.caution h4{color:var(--warn)}
+.verdict ul{margin:.4rem 0 0; padding-left:1.1rem; color:var(--fg2)}
+.verdict li{margin-bottom:.3rem}
+.pickCard{border-left:3px solid var(--accent2)}
+.pickCard .p{font-family:var(--mono); font-size:.68rem; color:var(--fg3);
+  margin-top:.4rem; line-height:1.45; word-break:break-all}

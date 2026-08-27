@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1등주 투자 판단 대시보드</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <h1>미국 1등주 투자 판단</h1>
+    <span class="sub" id="panelRange">데이터 적재 중…</span>
+  </div>
+  <div class="topActions">
+    <button id="btnRefresh" class="ghost">시세 새로 받기</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="today">오늘 할 일</button>
+  <button class="tab" data-tab="backtest">백테스트</button>
+  <button class="tab" data-tab="timeline">시점별 수익률</button>
+  <button class="tab" data-tab="best">최적 매매법</button>
+  <button class="tab" data-tab="data">데이터 출처</button>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════ 오늘 할 일 ══════════════════════ -->
+<section class="panel active" id="tab-today">
+
+  <div class="stateHero" id="stateHero">
+    <div class="stateBadge" id="stateBadge">…</div>
+    <div class="stateText">
+      <div class="stateLine" id="stateLine">불러오는 중…</div>
+      <div class="stateMeta" id="stateMeta"></div>
+    </div>
+    <div class="targetRing">
+      <canvas id="ringCanvas" width="180" height="180"></canvas>
+      <div class="ringLabel"><span id="ringPct">–</span><small>1등주 비중</small></div>
+    </div>
+  </div>
+
+  <h2>어제 종가 지표</h2>
+  <div class="cards" id="indicatorCards"></div>
+
+  <div class="split">
+    <div class="box">
+      <h2>내 현재 보유 비율</h2>
+      <p class="hint">보유 금액이나 비율을 입력하세요. 단위는 상관없습니다 — 합계 기준으로 계산합니다.</p>
+      <div class="holdRow">
+        <label>1등주 <span id="holdLeaderName" class="mono"></span>
+          <input type="number" id="hStock" value="100" min="0" step="any"></label>
+        <label>금 펀드
+          <input type="number" id="hGold" value="0" min="0" step="any"></label>
+        <label>국채 펀드
+          <input type="number" id="hBond" value="0" min="0" step="any"></label>
+      </div>
+      <button id="btnCalcAction" class="primary">해야 할 일 계산</button>
+    </div>
+
+    <div class="box">
+      <h2>오늘의 지시</h2>
+      <ul class="actions" id="actionList"></ul>
+      <h3>판단 근거</h3>
+      <ul class="reasons" id="reasonList"></ul>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>실시간 미국 시가총액 순위</h2>
+    <p class="hint">매 갱신마다 온라인에서 확인합니다. 1위가 바뀌면 전략의 투자 대상도 자동으로 바뀝니다.</p>
+    <table class="tbl" id="capTable"><tbody></tbody></table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ 백테스트 ═══════════════════════ -->
+<section class="panel" id="tab-backtest">
+  <div class="box controls">
+    <h2>매매 규칙</h2>
+    <div class="presets" id="presetRow"></div>
+    <p class="hint" id="presetNote"></p>
+    <div class="grid" id="paramGrid"></div>
+    <div class="ctlRow">
+      <label>시작일 <input type="date" id="btStart"></label>
+      <label>종료일 <input type="date" id="btEnd"></label>
+      <button id="btnRun" class="primary">백테스트 실행</button>
+      <button id="btnReset" class="ghost">기본값</button>
+      <span class="hint" id="btStatus"></span>
+    </div>
+  </div>
+
+  <div class="metrics" id="btMetrics"></div>
+
+  <div class="box">
+    <div class="chartHead">
+      <h2>자산 성장 곡선</h2>
+      <div class="legend" id="chartLegend"></div>
+      <label class="chk"><input type="checkbox" id="logScale" checked> 로그 축</label>
+    </div>
+    <canvas id="mainChart" height="380"></canvas>
+    <p class="hint">회색 음영은 회피(금·국채) 구간입니다. 차트를 클릭하면 그 시점부터 시작했을 때의 성과를 계산합니다.</p>
+  </div>
+
+  <div class="box" id="pointBox" hidden>
+    <h2>선택 시점 <span id="pointDate" class="mono"></span> 부터 시작했다면</h2>
+    <div class="metrics" id="pointMetrics"></div>
+  </div>
+
+  <div class="box">
+    <h2>연도별 성과</h2>
+    <canvas id="yearChart" height="200"></canvas>
+  </div>
+
+  <div class="box">
+    <h2>10년 단위로 쪼개보면</h2>
+    <p class="hint">전체 기간 숫자 하나는 많은 것을 숨깁니다. 이 표가 진짜 이야기입니다.</p>
+    <div class="scroll"><table class="tbl" id="decadeTable"></table></div>
+  </div>
+
+  <div class="box">
+    <h2>최근 매매 내역</h2>
+    <div class="scroll"><table class="tbl" id="tradeTable"></table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ 시점별 ═════════════════════════ -->
+<section class="panel" id="tab-timeline">
+  <div class="box">
+    <h2>언제 시작했느냐에 따른 결과</h2>
+    <p class="hint">각 연도 첫 거래일에 1천만원으로 시작하고 매월 50만원씩 적립했을 때, 오늘까지의 결과입니다.
+      행을 클릭하면 상세를 봅니다. 맨 오른쪽 <b>차이</b> 열은 최종 평가액 기준이고,
+      <b>전략 CAGR</b> 은 시간가중이라 두 값의 승패가 갈릴 수 있습니다 —
+      계좌가 가장 컸던 시기에 어느 쪽이 잘했느냐의 차이입니다.</p>
+    <button id="btnTimeline" class="primary">계산하기</button>
+    <span class="hint" id="tlStatus"></span>
+    <div class="scroll"><table class="tbl" id="timelineTable"></table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ 최적 매매법 ════════════════════ -->
+<section class="panel" id="tab-best">
+  <div class="box">
+    <h2>과거 기록이 지지하는 매매법</h2>
+    <p class="hint">
+      학습구간에서만 규칙을 찾고, 탐색이 한 번도 보지 않은 검증구간에서 다시 채점했습니다.
+      두 구간 모두에서 살아남은 규칙만 위에 옵니다.
+    </p>
+    <div id="optSummary"></div>
+    <div id="verdict"></div>
+    <h3>목표별 최적 규칙</h3>
+    <div class="metrics" id="pickCards"></div>
+    <h3>수익과 낙폭의 맞바꿈 (파레토 프론티어)</h3>
+    <canvas id="frontierChart" height="300"></canvas>
+    <p class="hint">점 하나가 규칙 하나입니다. 오른쪽 위로 갈수록 좋습니다.
+      ✕ 는 아무 규칙 없이 그냥 들고 있었을 때의 위치입니다.</p>
+    <h3>검증구간까지 살아남은 상위 규칙</h3>
+    <div class="scroll"><table class="tbl" id="optTable"></table></div>
+  </div>
+  <div class="box">
+    <h2>아무것도 하지 않았다면 (벤치마크)</h2>
+    <div class="scroll"><table class="tbl" id="benchTable"></table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ 데이터 ═════════════════════════ -->
+<section class="panel" id="tab-data">
+  <div class="box">
+    <h2>지표 원천</h2>
+    <p class="hint" id="provider"></p>
+    <div class="scroll"><table class="tbl" id="provTable"></table></div>
+  </div>
+  <div class="box warn">
+    <h2>데이터에 대한 정직한 한계</h2>
+    <ul id="caveatList"></ul>
+  </div>
+  <div class="box">
+    <h2>시가총액 1위 교체 이력</h2>
+    <p class="hint" id="leaderNote"></p>
+    <div class="scroll"><table class="tbl" id="leaderTable"></table></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p><strong>투자 조언이 아닙니다.</strong> 이 페이지는 과거 시세로 규칙을 시뮬레이션한 결과만 보여줍니다.
+     과거 성과는 미래를 보장하지 않으며, 백테스트는 실제 체결·세금·환율을 완전히 반영하지 못합니다.
+     투자 판단과 그 결과는 본인의 책임입니다.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

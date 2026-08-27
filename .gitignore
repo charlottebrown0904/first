@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 시세 캐시는 온라인에서 언제든 다시 받습니다
+data/cache/
+
+# 로그는 제외하되, 탐색 결과는 커밋합니다 (없으면 '최적 매매법' 탭이 비어 보입니다)
+data/results/*.log
+data/results/*.txt
