@@ -16,7 +16,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from .config import CACHE, SERIES, REMOVED_SERIES, BACKTEST_START, VIX_PROXY_BEFORE
+from .config import (CACHE, SERIES, REMOVED_SERIES, REVIEWED_SHELTERS,
+                     BACKTEST_START, VIX_PROXY_BEFORE)
 from . import leaders
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -193,6 +194,7 @@ def provenance() -> dict:
         "series": out,
         "leader_note": leaders.source_note(),
         "removed": REMOVED_SERIES,
+        "reviewed_shelters": REVIEWED_SHELTERS,
         "caveats": [
             f"VIX 는 {VIX_PROXY_BEFORE} 부터 실제 지수이며, 그 이전은 나스닥 "
             "21일 실현변동성 × 1.15 로 만든 대용치입니다.",
