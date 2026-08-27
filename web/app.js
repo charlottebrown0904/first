@@ -334,7 +334,7 @@ async function loadStatus(withHoldings) {
 
   drawRing($('#ringCanvas'), d.target);
   $('#ringPct').textContent = Math.round(d.target.stock * 100) + '%';
-  $('#holdLeaderName').textContent = d.leader;
+  renderHoldings(d);
 
   $('#indicatorCards').innerHTML = Object.entries(d.indicators).map(([k, v]) => {
     if (v.close == null) return '';
@@ -365,6 +365,31 @@ async function loadStatus(withHoldings) {
         <td>$${(r.market_cap / 1e12).toFixed(2)}T</td></tr>`).join('') + '</tbody>'
     : '<tbody><tr><td>시가총액 순위를 아직 받지 못했습니다.</td></tr></tbody>';
 }
+
+/* Both legs sit in one table so the split reads at a glance: ticker, what you
+   hold, what that works out to, and what the rule wants. Zero is written as
+   "0%" rather than left blank - a blank cell reads as "not calculated". */
+function renderHoldings(d) {
+  const bond = S.meta?.provenance?.series?.find(x => x.key === 'bond');
+  $('#hStockTicker').textContent = d.leader || '–';
+  $('#hBondTicker').textContent = bond ? bond.ticker : '–';
+  $('#hStockTgt').textContent = `${Math.round((d.target.stock ?? 0) * 100)}%`;
+  $('#hBondTgt').textContent = `${Math.round((d.target.bond ?? 0) * 100)}%`;
+  updateHoldingShares();
+}
+
+/* what the numbers the user typed actually work out to, as a share of the total */
+function updateHoldingShares() {
+  const st = Math.max(0, +$('#hStock').value || 0);
+  const bd = Math.max(0, +$('#hBond').value || 0);
+  const tot = st + bd;
+  const fmt = v => tot > 0 ? `${(v / tot * 100).toFixed(1)}%` : '–';
+  $('#hStockCur').textContent = fmt(st);
+  $('#hBondCur').textContent = fmt(bd);
+}
+
+['#hStock', '#hBond'].forEach(id =>
+  $(id).addEventListener('input', updateHoldingShares));
 
 $('#btnCalcAction').addEventListener('click', () => loadStatus(true).catch(showErr));
 
@@ -513,14 +538,39 @@ function renderBacktest(d) {
 
   loadDecades();
 
-  const tr = (d.trades || []).slice(-60).reverse();
+  const bondTicker = S.meta?.provenance?.series?.find(x => x.key === 'bond')?.ticker || '국채';
+  const tr = (d.trades || []).slice(-80).reverse();
+  const px = v => v == null ? '–' : v >= 100 ? v.toFixed(2) : v.toFixed(4);
+
   $('#tradeTable').innerHTML =
-    `<thead><tr><th>일자</th><th>상태</th><th>대상</th><th>목표 주식비중</th>
-      <th>평가액</th><th>거래금액</th></tr></thead><tbody>` +
-    tr.map(t => `<tr><td>${t.date}</td><td>${esc(t.state)}</td>
-      <td>${esc(t.leader)}${t.handover ? '<span class="tag">교체</span>' : ''}</td>
-      <td>${(t.target * 100).toFixed(0)}%</td>
-      <td>${KRW(t.value)}</td><td>${KRW(t.turnover)}</td></tr>`).join('') + '</tbody>';
+    `<thead><tr>
+      <th rowspan="2">일자</th><th rowspan="2">상태</th>
+      <th class="grp ld sep" colspan="3">1등주</th>
+      <th class="grp bd sep" colspan="2">국채 펀드</th>
+      <th class="sep" rowspan="2">거래금액</th>
+      <th rowspan="2">평가액</th><th rowspan="2">누적 납입</th>
+      <th rowspan="2">누적 손익률</th>
+     </tr><tr>
+      <th class="sep">종목</th><th>매매가</th><th>비중</th>
+      <th class="sep">${esc(bondTicker)}</th><th>비중</th>
+     </tr></thead><tbody>` +
+    tr.map(t => {
+      const side = t.side === '매수' ? 'up' : t.side === '매도' ? 'down' : '';
+      return `<tr>
+        <td>${t.date}</td>
+        <td>${esc(t.state)}</td>
+        <td class="sep">${esc(t.leader)}${t.handover ? '<span class="tag">교체</span>' : ''}</td>
+        <td class="${side}">${px(t.px_stock)}
+          <span class="tag">${esc(t.side || '')}</span></td>
+        <td>${((t.w_stock ?? 0) * 100).toFixed(0)}%</td>
+        <td class="sep">${px(t.px_bond)}</td>
+        <td>${((t.w_bond ?? 0) * 100).toFixed(0)}%</td>
+        <td class="sep">${KRW(t.turnover)}</td>
+        <td>${KRW(t.value)}</td>
+        <td>${KRW(t.contributed)}</td>
+        <td class="${cls(t.pnl)}"><b>${t.pnl == null ? '–' : sgn(t.pnl * 100)}</b></td>
+      </tr>`;
+    }).join('') + '</tbody>';
 }
 
 /* yearly bars: strategy vs buy&hold */

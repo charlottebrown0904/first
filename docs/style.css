@@ -393,3 +393,12 @@ footer strong{color:var(--warn-ink)}
   padding:.35rem .7rem;
 }
 .dataNote:empty{display:none}
+
+/* ── 보유 비율 표 ──────────────────────────────────────────── */
+.holdTbl{margin-bottom:.8rem}
+.holdTbl th,.holdTbl td{padding:.4rem .55rem}
+.holdTbl td:first-child,.holdTbl th:first-child{text-align:left; font-family:inherit}
+.holdTbl input{padding:.32rem .45rem; text-align:right; min-width:5.5rem}
+.holdTbl .tgt{font-weight:700; color:var(--accent-ink)}
+.holdTbl tbody tr:nth-child(even){background:transparent}
+.holdTbl tbody tr:hover{background:var(--bg3)}
