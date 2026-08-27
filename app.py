@@ -1,7 +1,13 @@
-"""투자 판단 홈페이지 - Flask backend.
+"""투자 판단 홈페이지 - 로컬 서버.
 
     python app.py            → http://127.0.0.1:5000
     python app.py --refresh  → 먼저 온라인에서 시세를 새로 받고 실행
+
+계산은 전부 브라우저(web/engine.js)에서 일어납니다. 이 서버가 하는 일은
+docs/ 를 띄워주는 것과, 온라인에서 시세를 다시 받아 docs/data 를 새로 굽는
+것뿐입니다. 그래서 로컬에서 보는 화면과 GitHub Pages 에 올라간 화면이 같습니다.
+API 엔드포인트들은 파이썬 엔진과 JS 엔진을 대조하는 용도로 남겨두었습니다
+(scripts/verify_js_engine.py).
 """
 from __future__ import annotations
 
@@ -18,7 +24,7 @@ warnings.filterwarnings("ignore")
 from src import advisor, datasource, engine, leaders, optimize
 from src.config import Params, PRESETS, ROOT, SEARCH_GRID, TRAIN_END, TEST_START
 
-app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="")
+app = Flask(__name__, static_folder=str(ROOT / "docs"), static_url_path="")
 # preset and indicator order carries meaning; don't let jsonify alphabetise it
 app.json.sort_keys = False
 
@@ -123,7 +129,15 @@ def _downsample(s: pd.Series, n: int = 1400) -> dict:
 # ------------------------------------------------------------------ routes
 @app.get("/")
 def index():
+    if not (ROOT / "docs" / "index.html").exists():
+        return ("docs/ 가 아직 없습니다. 먼저 python scripts/build_static.py 를 실행하세요.", 503)
     return send_from_directory(app.static_folder, "index.html")
+
+
+@app.get("/api/health")
+def api_health():
+    """The page pings this to decide whether '시세 새로 받기' can work."""
+    return jsonify({"ok": True, "mode": "local"})
 
 
 @app.get("/api/status")
@@ -359,8 +373,11 @@ def api_meta():
 
 @app.post("/api/refresh")
 def api_refresh():
+    """Re-pull every series, then re-bake docs/data so the page sees it."""
     datasource.refresh_all(force=True, quiet=True)
     panel(force=True)
+    from scripts.build_static import main as rebuild
+    rebuild()
     return jsonify(_clean({"ok": True, "provenance": datasource.provenance(),
                            "last": str(panel().index[-1].date())}))
 
@@ -368,6 +385,11 @@ def api_refresh():
 if __name__ == "__main__":
     if "--refresh" in sys.argv:
         datasource.refresh_all(force=True, quiet=False)
+    if "--refresh" in sys.argv or not (ROOT / "docs" / "data" / "panel.json").exists():
+        print("· 정적 데이터 굽는 중…")
+        from scripts.build_static import main as rebuild
+        rebuild()
+
     print("· 데이터 적재 중…")
     pn = panel()
     print(f"  {pn.index[0].date()} ~ {pn.index[-1].date()}  ({len(pn):,} 거래일)")

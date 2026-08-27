@@ -9,7 +9,15 @@
 
 ---
 
-## 실행
+## 보는 곳
+
+**<https://charlottebrown0904.github.io/first/>** — 설치 없이 바로 열립니다.
+
+계산은 전부 브라우저에서 일어납니다. 규칙을 바꾸고, 기간·금액을 바꾸고,
+차트를 클릭해 그 시점부터의 수익률을 보는 것까지 서버 없이 그대로 됩니다.
+시세만 미리 구운 JSON(1.5MB, gzip 후 0.5MB)으로 함께 실립니다.
+
+## 직접 실행
 
 ```bash
 pip install -r requirements.txt
@@ -19,14 +27,60 @@ pip install -r requirements.txt
 python app.py --refresh
 ```
 
-`--refresh` 는 온라인에서 시세를 새로 받습니다(최초 1회 필수, 이후 12시간마다 자동 갱신).
-브라우저에서 <http://127.0.0.1:5000> 을 엽니다.
+`--refresh` 는 온라인에서 시세를 새로 받고 `docs/` 를 다시 굽습니다(최초 1회 필수).
+브라우저에서 <http://127.0.0.1:5000> 을 엽니다. 로컬 서버가 하는 일은 `docs/` 를
+띄워주는 것과 시세를 다시 받는 것뿐이라, **로컬 화면과 배포된 화면이 같습니다.**
 
 최적 매매법 탐색은 시간이 걸리므로 따로 돌립니다:
 
 ```bash
 python scripts/optimize_run.py 12000
 ```
+
+---
+
+## 정적 배포가 어떻게 되는가
+
+GitHub Pages 는 정적 파일만 서빙하므로 Flask API 를 쓸 수 없습니다. 그렇다고
+결과를 미리 구워 박제하면 파라미터를 못 바꾸니, 대신 **백테스트 엔진 자체를
+브라우저로 옮겼습니다**(`web/engine.js`).
+
+```
+scripts/build_static.py   →  docs/
+  data/panel.json              시세 전량 (11,758일 × 10계열)
+  data/meta.json               출처·1위 이력·프리셋
+  data/optimization.json       탐색 결과
+  data/verify_ref.json         파이썬 엔진의 기준값
+  engine.js                    백테스트 (src/engine.py 의 JS 판)
+  backend.js                   브라우저 안에서 API 를 대신하는 계층
+  app.js / style.css / index.html
+  verify.html                  두 엔진 대조 페이지
+```
+
+`app.js` 는 `api('backtest', {...})` 처럼 부르기만 하고, 그 요청이 어디서
+처리되는지는 `backend.js` 가 정합니다. 그래서 화면 코드는 한 벌뿐입니다.
+
+### 엔진이 둘이면 어긋납니다 — 그래서 대조합니다
+
+같은 규칙을 두 언어로 구현하면 조용히 갈라지기 마련이라, 배포판은 자기 자신을
+검사하는 페이지를 함께 싣습니다: **[verify.html](https://charlottebrown0904.github.io/first/verify.html)**
+
+`scripts/verify_js_engine.py` 가 규칙·기간·금액을 섞은 12개 케이스를 파이썬
+엔진으로 돌려 기준값을 굽고, `verify.html` 이 같은 케이스를 브라우저 엔진으로
+다시 돌려 상대오차를 잽니다.
+
+> 현재: **검사 348개, 불일치 0개, 최대 상대오차 4.7e-9**
+
+만들면서 실제로 갈라진 곳이 하나 있었습니다. `sortino` 는 하락일만 모아
+표준편차를 내는데, 시세를 JSON 으로 구울 때 유효숫자를 줄이면 `-1e-17` 같은
+날이 0의 어느 쪽에 놓이는지가 언어마다 달라져 집합이 어긋났습니다. 한 조 단위
+움직임은 어느 쪽에서도 하락일이 아니므로, 양쪽 모두 `< -1e-12` 로 판정하도록
+고쳤습니다.
+
+### 성능
+
+브라우저에서 46년 백테스트 한 번이 약 0.3초, 45개 시작 연도(백테스트 90회)가
+약 0.6초입니다. HTTP 왕복이 사라져 오히려 Flask 판보다 빠릅니다.
 
 ---
 
@@ -242,7 +296,7 @@ python scripts/optimize_run.py 12000
 ## 구조
 
 ```
-app.py                 Flask 서버 + JSON API
+app.py                 로컬 서버 (docs/ 서빙 + 시세 갱신)
 src/config.py          티커, 기간, 파라미터 정의, 탐색 격자
 src/leaders.py         시총 1위 타임라인 (+ 실시간 1위 확인)
 src/datasource.py      온라인 수신 · 캐시 · 통합 패널
@@ -250,7 +304,13 @@ src/engine.py          백테스트 엔진 (목표비중 상태기계, 지표, �
 src/optimize.py        워크포워드 파라미터 탐색 · 파레토 프론티어
 src/advisor.py         "어제 종가 기준 오늘 할 일"
 scripts/optimize_run.py  탐색 실행 스크립트
-web/                   프론트엔드 (외부 요청 0개, 차트도 직접 그림)
+web/                   프론트엔드 원본 (외부 요청 0개, 차트도 직접 그림)
+  engine.js              백테스트 엔진의 JS 판
+  backend.js             브라우저 안에서 API 를 대신하는 계층
+  verify.html            두 엔진 대조 페이지
+docs/                  배포본 (build_static.py 가 생성 — 직접 고치지 마세요)
+scripts/build_static.py  docs/ 굽기
+scripts/verify_js_engine.py  파이썬 기준값 굽기
 data/seed/leaders.json 1위 교체 이력 (직접 수정 가능)
 data/cache/            받아온 시세 CSV + manifest
 data/results/          탐색 결과 JSON
