@@ -207,67 +207,67 @@
   {
    "ticker": "NVDA",
    "name": "NVIDIA Corporation",
-   "market_cap": 5470433574912.0
+   "market_cap": 5423929753600.0
   },
   {
    "ticker": "AAPL",
    "name": "Apple Inc.",
-   "market_cap": 4535870816256.0
+   "market_cap": 4565205254144.0
   },
   {
    "ticker": "GOOGL",
    "name": "Alphabet Inc.",
-   "market_cap": 4158177935360.0
+   "market_cap": 4149861679104.0
   },
   {
    "ticker": "MSFT",
    "name": "Microsoft Corporation",
-   "market_cap": 3750160498688.0
+   "market_cap": 3743329026048.0
   },
   {
    "ticker": "AMZN",
    "name": "Amazon.com, Inc.",
-   "market_cap": 2773430829056.0
+   "market_cap": 2773754314752.0
   },
   {
    "ticker": "AVGO",
    "name": "Broadcom Inc.",
-   "market_cap": 1753691586560.0
+   "market_cap": 1745223155712.0
   },
   {
    "ticker": "META",
    "name": "Meta Platforms, Inc.",
-   "market_cap": 1473554022400.0
+   "market_cap": 1460931002368.0
   },
   {
    "ticker": "TSLA",
    "name": "Tesla, Inc.",
-   "market_cap": 1392057516032.0
+   "market_cap": 1397014134784.0
   },
   {
    "ticker": "BRK-B",
    "name": "Berkshire Hathaway Inc. New",
-   "market_cap": 1072653991936.0
+   "market_cap": 1075385532416.0
   },
   {
    "ticker": "LLY",
    "name": "Eli Lilly and Company",
-   "market_cap": 1054423973888.0
+   "market_cap": 1061100912640.0
   },
   {
    "ticker": "JPM",
    "name": "JP Morgan Chase & Co.",
-   "market_cap": 938579001344.0
+   "market_cap": 941861896192.0
   },
   {
    "ticker": "WMT",
    "name": "Walmart Inc.",
-   "market_cap": 815504162816.0
+   "market_cap": 816896802816.0
   },
   {
    "ticker": "XOM",
    "name": "ExxonMobil Holdings Corporation",
-   "market_cap": 644392091648.0
+   "market_cap": 644830068736.0
   }
  ],
  "defaults": {
@@ -406,6 +406,6 @@
  "test_start": "2006-01-01",
  "panel_start": "1980-01-02",
  "panel_end": "2026-08-27",
- "built_at": "2026-08-27T23:30:16",
+ "built_at": "2026-08-27T23:39:05",
  "static": true
 }
