@@ -352,3 +352,44 @@ footer strong{color:var(--warn-ink)}
   display:flex; align-items:center; justify-content:center;
 }
 .steps .note{display:block; font-size:.76rem; color:var(--fg3); margin-top:.15rem}
+
+/* ── 원자료 표: 머리글과 날짜 열 고정 ──────────────────────────
+   표가 자체 스크롤 박스를 가져야 sticky 가 페이지가 아니라 표 안에서
+   먹습니다. 머리글이 두 줄이라 둘째 줄의 top 은 첫 줄 높이만큼 내려야
+   하는데, 그 높이는 렌더 후에야 알 수 있어 JS 가 --rawHead1 로 넣습니다. */
+.rawScroll{
+  max-height:72vh; overflow:auto;
+  border:1px solid var(--line); border-radius:9px;
+}
+.rawTbl{border-collapse:separate; border-spacing:0}
+.rawTbl th,.rawTbl td{border-bottom:1px solid var(--line)}
+
+.rawTbl thead tr:first-child th{position:sticky; top:0; z-index:3}
+.rawTbl thead tr:nth-child(2) th{
+  position:sticky; top:var(--rawHead1,26px); z-index:3;
+  background:var(--bg3);
+}
+/* 머리글 배경이 비치면 밑의 숫자가 겹쳐 보입니다 */
+.rawTbl thead th{background:var(--bg3)}
+.rawTbl thead tr:first-child th.grp.nq{background:var(--accent-soft)}
+.rawTbl thead tr:first-child th.grp.vx{background:var(--shelter-soft)}
+.rawTbl thead tr:first-child th.grp.ld{background:var(--accent2-soft)}
+.rawTbl thead tr:first-child th.grp.bd{background:#e8f0ea}
+
+/* 가로로 밀어도 날짜는 남아 있어야 어느 날 값인지 알 수 있습니다 */
+.rawTbl th:first-child,.rawTbl td:first-child{
+  position:sticky; left:0; z-index:2; background:var(--bg2);
+  box-shadow:1px 0 0 var(--line);
+}
+.rawTbl tbody tr:nth-child(even) td:first-child{background:#fbfaf8}
+.rawTbl tbody tr:hover td:first-child{background:var(--accent-soft)}
+.rawTbl tr.sig td:first-child{background:var(--down-soft)}
+.rawTbl thead th:first-child{z-index:4}
+
+.setSummary.stale{background:var(--warn-soft); border-color:#eed9bd; color:var(--warn-ink)}
+.dataNote{
+  max-width:1180px; margin:.45rem auto 0; font-size:.76rem; color:var(--warn-ink);
+  background:var(--warn-soft); border:1px solid #eed9bd; border-radius:7px;
+  padding:.35rem .7rem;
+}
+.dataNote:empty{display:none}

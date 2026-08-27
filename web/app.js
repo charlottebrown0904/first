@@ -51,12 +51,25 @@ function query(extra = {}) {
 
 function renderSettingsSummary() {
   const s = settings();
-  const yrs = (s.start && s.end)
-    ? ((new Date(s.end) - new Date(s.start)) / 3.15576e10).toFixed(1) : '–';
+  const hi = S.meta?.panel_end;
+  const eff = hi && s.end > hi ? hi : s.end;          // what the data can cover
+  const yrs = (s.start && eff)
+    ? ((new Date(eff) - new Date(s.start)) / 3.15576e10).toFixed(1) : '–';
   const months = Math.max(0, Math.round(yrs * 12));
   const paid = s.initial_krw + s.monthly_krw * months;
-  $('#setSummary').textContent =
-    `${yrs}년 · 총 납입 예상 ${KRW(paid)}`;
+
+  const el = $('#setSummary');
+  el.textContent = `${yrs}년 · 총 납입 예상 ${KRW(paid)}`;
+  // never let a requested end date quietly differ from the data behind it
+  el.classList.toggle('stale', !!(hi && s.end > hi));
+  el.title = hi && s.end > hi
+    ? `요청 종료일 ${s.end} · 실제 데이터는 ${hi} 종가까지` : '';
+  const note = $('#dataNote');
+  if (note) note.innerHTML = (hi && s.end > hi)
+    ? `종료일 <b>${s.end}</b> 로 조회했지만 보유한 시세는 <b>${hi}</b> 종가까지입니다.`
+      + (S.hasServer ? ' <b>조회</b>를 누르면 온라인에서 최신 종가를 받아옵니다.'
+                     : ' 배포본은 구운 시점의 시세를 쓰므로 그 이후는 반영되지 않습니다.')
+    : '';
 }
 
 function onSettingsChange() {
@@ -66,6 +79,42 @@ function onSettingsChange() {
   const active = $('.tab.active')?.dataset.tab;
   if (active === 'backtest') runBacktest();
   if (active === 'today') loadStatus(S.loaded.holdings);
+}
+
+/* 조회: bring the numbers up to the chosen end date.
+   With a local Python process behind the page that means actually re-pulling
+   closes from Yahoo and re-baking the data. On the published copy there is no
+   such process, so it re-runs against the closes that were baked in and says
+   so rather than pretending it fetched something. */
+async function runQuery() {
+  const b = $('#btnQuery');
+  const label = b.textContent;
+  b.disabled = true;
+
+  try {
+    if (S.hasServer) {
+      b.innerHTML = '<span class="spinner"></span> 시세 받는 중…';
+      const r = await fetch('/api/refresh', { method: 'POST' });
+      if (!r.ok) throw new Error('시세 갱신 실패');
+      location.reload();
+      return;
+    }
+    b.innerHTML = '<span class="spinner"></span> 계산 중…';
+    Backend.reset();                       // drop caches so nothing goes stale
+    S.meta = await api('meta');
+    S.backtest = null;
+    S.loaded = {};
+    renderSettingsSummary();
+    await loadStatus(S.loaded.holdings);
+    const active = $('.tab.active')?.dataset.tab;
+    if (active === 'backtest') await runBacktest();
+    if (active === 'raw') await loadRaw(1);
+  } catch (e) {
+    showErr(e);
+  } finally {
+    b.disabled = false;
+    b.textContent = label;
+  }
 }
 
 /* ══════════════════════════════ chart core ═══════════════════════════ */
@@ -682,6 +731,11 @@ function renderRaw(d) {
 
   $('#rawTable').innerHTML = head + `<tbody>${body}</tbody>`;
 
+  // the second header row can only be pinned once we know how tall the first is
+  const h1 = $('#rawTable').querySelector('thead tr:first-child th');
+  if (h1) $('#rawTable').style.setProperty('--rawHead1', h1.getBoundingClientRect().height + 'px');
+  $('.rawScroll').scrollTop = 0;
+
   const P = d.pages, p = d.page;
   $('#rawPager').innerHTML =
     `<button ${p <= 1 ? 'disabled' : ''} data-go="1">« 처음</button>
@@ -927,13 +981,22 @@ $('#btnRefresh').addEventListener('click', async () => {
    better first thing to see than a 1980 start nobody can act on. */
 const DEFAULT_START = '2019-01-02';
 
+const todayISO = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
+
 function wireSettings() {
   const { panel_start: lo, panel_end: hi } = S.meta;
+  const today = todayISO();
   for (const id of ['#gStart', '#gEnd', '#rawStart', '#rawEnd']) {
-    $(id).min = lo; $(id).max = hi;
+    $(id).min = lo;
+    // the end date may run past the last close we hold; the notice under the
+    // bar says how far the data actually reaches
+    $(id).max = id === '#gEnd' || id === '#rawEnd' ? today : hi;
   }
   $('#gStart').value = DEFAULT_START >= lo && DEFAULT_START <= hi ? DEFAULT_START : lo;
-  $('#gEnd').value = hi;
+  $('#gEnd').value = today;
   // the raw tab opens on the most recent year rather than 46 years of rows
   $('#rawStart').value = new Date(new Date(hi) - 3.15576e10).toISOString().slice(0, 10);
   $('#rawEnd').value = hi;
@@ -949,9 +1012,9 @@ function wireSettings() {
 
   $$('#quickRange button').forEach(b => b.addEventListener('click', () => {
     const y = +b.dataset.years;
-    $('#gEnd').value = hi;
+    $('#gEnd').value = today;
     $('#gStart').value = y === 0 ? lo
-      : new Date(Math.max(new Date(lo), new Date(hi) - y * 3.15576e10))
+      : new Date(Math.max(new Date(lo), new Date(today) - y * 3.15576e10))
           .toISOString().slice(0, 10);
     $$('#quickRange button').forEach(x => x.classList.toggle('on', x === b));
     onSettingsChange();
@@ -978,7 +1041,10 @@ async function detectServer() {
       $('#builtAt').textContent = `데이터 기준 ${S.meta.built_at.slice(0, 10)}`;
     buildParamGrid();
     wireSettings();
+    S.hasServer = await detectServer();
+    if (!S.hasServer) $('#btnRefresh').hidden = true;
+    renderSettingsSummary();
+    $('#btnQuery').addEventListener('click', runQuery);
     await loadStatus(false);
-    if (!(await detectServer())) $('#btnRefresh').hidden = true;
   } catch (e) { showErr(e); }
 })();

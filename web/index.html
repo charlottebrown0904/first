@@ -40,8 +40,13 @@
       <div class="unit"><input type="number" id="gInitial" min="0" step="10" value="1000"><em>만원</em></div></label>
     <label class="setField"><span>매월 적립금</span>
       <div class="unit"><input type="number" id="gMonthly" min="0" step="10" value="50"><em>만원</em></div></label>
+    <div class="setField" style="min-width:auto">
+      <span>&nbsp;</span>
+      <button id="btnQuery" class="primary">조회</button>
+    </div>
     <div class="setSummary" id="setSummary">–</div>
   </div>
+  <div class="dataNote" id="dataNote"></div>
 </div>
 
 <nav class="tabs">
@@ -335,7 +340,7 @@
       <span class="dot-sig t"></span>붉은 행 = <b>1등주 급락 신호</b>.
       신호는 위쪽 매매 규칙 설정을 따릅니다.
     </p>
-    <div class="scroll"><table class="tbl" id="rawTable"></table></div>
+    <div class="scroll rawScroll"><table class="tbl rawTbl" id="rawTable"></table></div>
     <div class="pager" id="rawPager"></div>
   </div>
 </section>

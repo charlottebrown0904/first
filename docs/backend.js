@@ -391,5 +391,8 @@ async function downloadCsv(start, end) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-return { call, panel, meta, downloadCsv, csvUrl };
+/* 조회를 다시 눌렀을 때 옛 시세가 남아 있지 않도록 캐시를 비웁니다 */
+function reset() { PANEL = META = OPT = RAW = null; }
+
+return { call, panel, meta, downloadCsv, csvUrl, reset };
 })();

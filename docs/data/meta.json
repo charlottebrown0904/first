@@ -6,16 +6,16 @@
     "key": "nasdaq",
     "label": "나스닥 종합지수",
     "ticker": "^IXIC",
-    "fetched_at": "2026-08-27T21:18:39",
-    "rows": 14006,
+    "fetched_at": "2026-08-27T23:30:02",
+    "rows": 14007,
     "first": "1971-02-05",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "vix",
     "label": "VIX 변동성지수",
     "ticker": "^VIX",
-    "fetched_at": "2026-08-27T21:18:44",
+    "fetched_at": "2026-08-27T23:30:05",
     "rows": 9232,
     "first": "1990-01-02",
     "last": "2026-08-27"
@@ -24,7 +24,7 @@
     "key": "bond",
     "label": "국채 펀드 (FGOVX)",
     "ticker": "FGOVX",
-    "fetched_at": "2026-08-27T21:18:42",
+    "fetched_at": "2026-08-27T23:30:04",
     "rows": 11758,
     "first": "1980-01-02",
     "last": "2026-08-26"
@@ -33,25 +33,25 @@
     "key": "bond_alt",
     "label": "美 7-10년 국채 ETF (참고)",
     "ticker": "IEF",
-    "fetched_at": "2026-08-27T21:18:16",
-    "rows": 6058,
+    "fetched_at": "2026-08-27T23:29:40",
+    "rows": 6059,
     "first": "2002-07-30",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "sp500",
     "label": "S&P 500 (참고)",
     "ticker": "^GSPC",
-    "fetched_at": "2026-08-27T21:18:24",
-    "rows": 16773,
+    "fetched_at": "2026-08-27T23:29:47",
+    "rows": 16774,
     "first": "1960-01-04",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "usdkrw",
     "label": "원/달러 환율",
     "ticker": "KRW=X",
-    "fetched_at": "2026-08-27T21:18:17",
+    "fetched_at": "2026-08-27T23:29:41",
     "rows": 5898,
     "first": "2003-12-01",
     "last": "2026-08-27"
@@ -60,55 +60,55 @@
     "key": "leader:AAPL",
     "label": "1등주 이력 – AAPL",
     "ticker": "AAPL",
-    "fetched_at": "2026-08-27T21:18:45",
-    "rows": 11518,
+    "fetched_at": "2026-08-27T23:30:06",
+    "rows": 11519,
     "first": "1980-12-12",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "leader:GE",
     "label": "1등주 이력 – GE",
     "ticker": "GE",
-    "fetched_at": "2026-08-27T21:18:47",
-    "rows": 16271,
+    "fetched_at": "2026-08-27T23:30:08",
+    "rows": 16272,
     "first": "1962-01-02",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "leader:IBM",
     "label": "1등주 이력 – IBM",
     "ticker": "IBM",
-    "fetched_at": "2026-08-27T21:18:49",
-    "rows": 16271,
+    "fetched_at": "2026-08-27T23:30:10",
+    "rows": 16272,
     "first": "1962-01-02",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "leader:MSFT",
     "label": "1등주 이력 – MSFT",
     "ticker": "MSFT",
-    "fetched_at": "2026-08-27T21:18:50",
-    "rows": 10192,
+    "fetched_at": "2026-08-27T23:30:12",
+    "rows": 10193,
     "first": "1986-03-13",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "leader:NVDA",
     "label": "1등주 이력 – NVDA",
     "ticker": "NVDA",
-    "fetched_at": "2026-08-27T21:18:51",
-    "rows": 6941,
+    "fetched_at": "2026-08-27T23:30:13",
+    "rows": 6942,
     "first": "1999-01-22",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    },
    {
     "key": "leader:XOM",
     "label": "1등주 이력 – XOM",
     "ticker": "XOM",
-    "fetched_at": "2026-08-27T21:18:53",
-    "rows": 16271,
+    "fetched_at": "2026-08-27T23:30:14",
+    "rows": 16272,
     "first": "1962-01-02",
-    "last": "2026-08-26"
+    "last": "2026-08-27"
    }
   ],
   "leader_note": "미국 시가총액 1위 기업의 역사적 기록. 과거 시총 순위를 제공하는 무료 API 는 존재하지 않으므로, 이 표는 공개된 기업 역사 기록을 바탕으로 큐레이션한 것이며 월 단위 해상도입니다. 교체일 전후 수개월은 실제로 1·2위가 엎치락뒤치락하던 구간이라 날짜에 오차가 있을 수 있습니다. 최신 구간은 src/leaders.py 가 yfinance 실시간 시가총액으로 자동 갱신합니다.",
@@ -207,67 +207,67 @@
   {
    "ticker": "NVDA",
    "name": "NVIDIA Corporation",
-   "market_cap": 5078174924800.0
+   "market_cap": 5470433574912.0
   },
   {
    "ticker": "AAPL",
    "name": "Apple Inc.",
-   "market_cap": 4574545969152.0
+   "market_cap": 4535870816256.0
   },
   {
    "ticker": "GOOGL",
    "name": "Alphabet Inc.",
-   "market_cap": 4182637805568.0
+   "market_cap": 4158177935360.0
   },
   {
    "ticker": "MSFT",
    "name": "Microsoft Corporation",
-   "market_cap": 3685818040320.0
+   "market_cap": 3750160498688.0
   },
   {
    "ticker": "AMZN",
    "name": "Amazon.com, Inc.",
-   "market_cap": 2807461576704.0
+   "market_cap": 2773430829056.0
   },
   {
    "ticker": "AVGO",
    "name": "Broadcom Inc.",
-   "market_cap": 1691748007936.0
+   "market_cap": 1753691586560.0
   },
   {
    "ticker": "META",
    "name": "Meta Platforms, Inc.",
-   "market_cap": 1467720269824.0
+   "market_cap": 1473554022400.0
   },
   {
    "ticker": "TSLA",
    "name": "Tesla, Inc.",
-   "market_cap": 1365832499200.0
+   "market_cap": 1392057516032.0
   },
   {
    "ticker": "BRK-B",
    "name": "Berkshire Hathaway Inc. New",
-   "market_cap": 1080865783808.0
+   "market_cap": 1072653991936.0
   },
   {
    "ticker": "LLY",
    "name": "Eli Lilly and Company",
-   "market_cap": 1060646158336.0
+   "market_cap": 1054423973888.0
   },
   {
    "ticker": "JPM",
    "name": "JP Morgan Chase & Co.",
-   "market_cap": 947643416576.0
+   "market_cap": 938579001344.0
   },
   {
    "ticker": "WMT",
    "name": "Walmart Inc.",
-   "market_cap": 830345904128.0
+   "market_cap": 815504162816.0
   },
   {
    "ticker": "XOM",
    "name": "ExxonMobil Holdings Corporation",
-   "market_cap": 650463346688.0
+   "market_cap": 644392091648.0
   }
  ],
  "defaults": {
@@ -405,7 +405,7 @@
  "train_end": "2005-12-31",
  "test_start": "2006-01-01",
  "panel_start": "1980-01-02",
- "panel_end": "2026-08-26",
- "built_at": "2026-08-27T23:16:15",
+ "panel_end": "2026-08-27",
+ "built_at": "2026-08-27T23:30:16",
  "static": true
 }
