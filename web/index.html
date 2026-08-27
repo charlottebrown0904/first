@@ -58,6 +58,68 @@
 <!-- ══════════════════════════════════════ 오늘 할 일 ══════════════════════ -->
 <section class="panel active" id="tab-today">
 
+  <div class="box intro">
+    <h2>이 페이지가 검증하는 투자 방법</h2>
+    <p class="hint">미국 시가총액 1위 종목 하나만 사되, 충격이 오면 피했다가 돌아오는
+      규칙입니다. 1980년부터 46년치 실제 시세로 검증했습니다.</p>
+
+    <ol class="howList">
+      <li><b>미국 시총 1위 종목 하나</b>를 삽니다. 1위가 바뀌면 갈아탑니다
+        <span class="flow">엑슨 → IBM → GE → 마이크로소프트 → 애플 → 엔비디아</span></li>
+      <li><b>매달 정해진 금액</b>을 계속 적립합니다.</li>
+      <li>나스닥이 <b>단기간에 급락</b>하거나 VIX 가 치솟으면 → <b>국채 펀드로 대피</b>합니다.</li>
+      <li>1등주 자체가 <b>약 3개월에 걸쳐 -10% 넘게</b> 빠지면 → 역시 대피합니다.</li>
+      <li>충격이 가라앉으면 <b>다시 1등주로</b> 돌아옵니다.</li>
+    </ol>
+
+    <h3>강점</h3>
+    <div class="strengths">
+      <div class="st good">
+        <div class="stk">낙폭을 확실히 줄입니다</div>
+        <div class="stv">45 / 45</div>
+        <div class="sts">시작 연도를 1980~2024년으로 45번 바꿔봐도 <b>전부</b> 낙폭이
+          줄었습니다. 평균 18.6%p. 이것이 가장 믿을 만한 효과입니다.</div>
+      </div>
+      <div class="st good">
+        <div class="stk">무너지는 장에서 강합니다</div>
+        <div class="stv">+11.3%p</div>
+        <div class="sts">나스닥이 반토막 났던 2000년대에 계속보유 대비 연 11.3%p 앞섰습니다.
+          그냥 들고 있었으면 그 10년은 마이너스였습니다.</div>
+      </div>
+      <div class="st good">
+        <div class="stk">종목을 고를 필요가 없습니다</div>
+        <div class="stv">규칙 1개</div>
+        <div class="sts">"시총 1위"라는 기계적 기준만 따릅니다. 전망도 분석도 필요 없고,
+          1위가 바뀌면 따라갈 뿐입니다.</div>
+      </div>
+      <div class="st good">
+        <div class="stk">판단이 단순합니다</div>
+        <div class="stv">어제 종가</div>
+        <div class="sts">지표 4개의 어제 종가만 보면 오늘 할 일이 정해집니다.
+          장중에 들여다볼 일이 없고, 매매는 연 5~6회뿐입니다.</div>
+      </div>
+    </div>
+
+    <h3>같이 알아야 할 한계</h3>
+    <div class="strengths">
+      <div class="st bad">
+        <div class="stk">강세장에서는 집니다</div>
+        <div class="stv">−8.7%p</div>
+        <div class="sts">2020년대처럼 계속 오르기만 하는 장에서는 피해 있는 동안
+          수익을 놓쳐 계속보유에 뒤집니다.</div>
+      </div>
+      <div class="st bad">
+        <div class="stk">"언제 시작해도 더 번다"는 거짓</div>
+        <div class="stv">22 / 45</div>
+        <div class="sts">수익률로 계속보유를 이긴 것은 45개 시작 연도 중 22개뿐입니다.
+          이 규칙이 확실히 사는 것은 <b>수익이 아니라 낙폭</b>입니다.</div>
+      </div>
+    </div>
+    <p class="hint">숫자의 근거는 <b>백테스트</b> 탭의 10년 단위 표와
+      <b>최적 매매법</b> 탭에서 직접 확인할 수 있습니다.
+      기간·금액을 바꿔 직접 돌려보셔도 됩니다.</p>
+  </div>
+
   <div class="stateHero" id="stateHero">
     <div class="stateBadge" id="stateBadge">…</div>
     <div class="stateText">
@@ -156,7 +218,7 @@
 <section class="panel" id="tab-timeline">
   <div class="box">
     <h2>언제 시작했느냐에 따른 결과</h2>
-    <p class="hint">각 연도 첫 거래일에 1천만원으로 시작하고 매월 50만원씩 적립했을 때, 오늘까지의 결과입니다.
+    <p class="hint">각 연도 첫 거래일에 <b>공통 설정</b>의 금액으로 시작해 매월 적립했을 때, 오늘까지의 결과입니다.
       행을 클릭하면 상세를 봅니다. 맨 오른쪽 <b>차이</b> 열은 최종 평가액 기준이고,
       <b>전략 CAGR</b> 은 시간가중이라 두 값의 승패가 갈릴 수 있습니다 —
       계좌가 가장 컸던 시기에 어느 쪽이 잘했느냐의 차이입니다.</p>
@@ -198,7 +260,9 @@
     <p class="hint">모든 값은 <b>종가</b> 기준입니다. 각 지표마다 종가 · <b>전일 대비</b> ·
       <b>최고점 대비</b>(그 지표의 역대 최고 종가 대비 몇 % 아래인지)를 보여줍니다.
       1등주는 종목이 바뀌므로 <b>해당 종목 자신의 기록</b>에 대해 계산합니다.
-      최고점은 보고 있는 구간이 아니라 <b>전체 기록</b> 기준이라, 페이지를 넘겨도 뜻이 같습니다.</p>
+      최고점은 보고 있는 구간이 아니라 <b>전체 기록</b> 기준이라, 페이지를 넘겨도 뜻이 같습니다.
+      <b>VIX 는 종가만</b> 싣습니다 — 가격이 아니라 수준이라, "최고점 대비 -82%"가
+      다른 열과 반대로(변동성이 낮아 좋은 상태) 읽히기 때문입니다.</p>
     <div class="rawBar">
       <label class="setField"><span>표시 시작일</span><input type="date" id="rawStart"></label>
       <label class="setField"><span>표시 종료일</span><input type="date" id="rawEnd"></label>

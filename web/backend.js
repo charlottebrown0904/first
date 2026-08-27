@@ -378,14 +378,14 @@ async function downloadCsv(start, end) {
   const P = await panel();
   const t = rawTable(P);
   let [lo, hi] = Engine.bounds(P, start, end);
-  const head = ['date', 'nasdaq', 'nasdaq_chg', 'nasdaq_peak', 'vix', 'vix_chg', 'vix_peak',
+  const head = ['date', 'nasdaq', 'nasdaq_chg', 'nasdaq_peak', 'vix',
     'gold', 'gold_chg', 'gold_peak', 'bond', 'bond_chg', 'bond_peak',
     'leader', 'leader_px', 'leader_chg', 'leader_peak'];
   const f = v => (v === null || v === undefined || !Number.isFinite(v)) ? '' : (Math.round(v * 1e4) / 1e4);
   const lines = [head.join(',')];
   for (let i = lo; i < hi; i++) {
     lines.push([P.dates[i], f(t.nasdaq[i]), f(t.nasdaq_chg[i]), f(t.nasdaq_peak[i]),
-      f(t.vix[i]), f(t.vix_chg[i]), f(t.vix_peak[i]),
+      f(t.vix[i]),
       f(t.gold[i]), f(t.gold_chg[i]), f(t.gold_peak[i]),
       f(t.bond[i]), f(t.bond_chg[i]), f(t.bond_peak[i]),
       P.leaderNames[P.leaderIdx[i]], f(t.leader[i]), f(t.leader_chg[i]), f(t.leader_peak[i])].join(','));

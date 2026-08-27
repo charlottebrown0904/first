@@ -583,12 +583,15 @@ $('#btnTimeline').addEventListener('click', async () => {
 /* Five indicators × (close, day-over-day, drawdown from peak). The peak column
    is the one worth reading: it says how far below its own record each series
    currently sits, which is exactly what the trading rules are watching. */
+/* VIX is close-only on purpose. It is a level, not a price: "8% below its
+   peak" would mean volatility is calm, which reads backwards next to four
+   columns where a big negative number is bad news. */
 const RAW_GROUPS = [
-  { key: 'nasdaq', label: '나스닥 지수', cls: 'nq', dp: 2 },
-  { key: 'vix',    label: 'VIX',        cls: 'vx', dp: 2 },
-  { key: 'leader', label: '1등주',       cls: 'ld', dp: 2 },
-  { key: 'gold',   label: '금 펀드',     cls: 'gd', dp: 2 },
-  { key: 'bond',   label: '국채 펀드',   cls: 'bd', dp: 2 },
+  { key: 'nasdaq', label: '나스닥 지수', cls: 'nq', cols: 3 },
+  { key: 'vix',    label: 'VIX',        cls: 'vx', cols: 1 },
+  { key: 'leader', label: '1등주',       cls: 'ld', cols: 3 },
+  { key: 'gold',   label: '금 펀드',     cls: 'gd', cols: 3 },
+  { key: 'bond',   label: '국채 펀드',   cls: 'bd', cols: 3 },
 ];
 
 /* a tiny inline bar so depth-below-peak reads at a glance, not digit by digit */
@@ -622,9 +625,12 @@ function renderRaw(d) {
   const head =
     `<thead>
       <tr><th rowspan="2">날짜</th><th rowspan="2">신호</th>` +
-      RAW_GROUPS.map(g => `<th class="grp ${g.cls} sep" colspan="3">${esc(g.label)}</th>`).join('') +
+      RAW_GROUPS.map(g =>
+        `<th class="grp ${g.cls} sep" colspan="${g.cols}">${esc(g.label)}</th>`).join('') +
     `</tr><tr>` +
-      RAW_GROUPS.map(() => `<th class="sep">종가</th><th>전일 대비</th><th>최고점 대비</th>`).join('') +
+      RAW_GROUPS.map(g => g.cols === 1
+        ? `<th class="sep">종가</th>`
+        : `<th class="sep">종가</th><th>전일 대비</th><th>최고점 대비</th>`).join('') +
     `</tr></thead>`;
 
   const body = d.rows.map(r => {
@@ -636,13 +642,16 @@ function renderRaw(d) {
 
     const cells = RAW_GROUPS.map(g => {
       const close = r[g.key === 'leader' ? 'leader_px' : g.key];
-      const chg = r[`${g.key}_chg`], pk = r[`${g.key}_peak`];
       const name = g.key === 'leader'
         ? ` <span class="tag">${esc(r.leader)}</span>` : '';
       const proxy = g.key === 'vix' && r.vix_is_proxy
         ? ' <span class="tag proxy">대용</span>' : '';
-      return `<td class="sep">${close == null ? '–' : close.toLocaleString()}${name}${proxy}</td>
-              <td class="${cls(chg)}">${chg == null ? '–' : sgn(chg)}</td>` + peakCell(pk);
+      const closeTd =
+        `<td class="sep">${close == null ? '–' : close.toLocaleString()}${name}${proxy}</td>`;
+      if (g.cols === 1) return closeTd;
+      const chg = r[`${g.key}_chg`], pk = r[`${g.key}_peak`];
+      return closeTd +
+        `<td class="${cls(chg)}">${chg == null ? '–' : sgn(chg)}</td>` + peakCell(pk);
     }).join('');
 
     return `<tr class="${sig}"><td>${r.date}</td><td>${badge}</td>${cells}</tr>`;
@@ -873,12 +882,17 @@ $('#btnRefresh').addEventListener('click', async () => {
   }
 });
 
+/* Opening view: 1천만원 on 2019-01-02, 50만원 a month. The full 46 years is
+   one click away, but a window someone might actually have lived through is a
+   better first thing to see than a 1980 start nobody can act on. */
+const DEFAULT_START = '2019-01-02';
+
 function wireSettings() {
   const { panel_start: lo, panel_end: hi } = S.meta;
   for (const id of ['#gStart', '#gEnd', '#rawStart', '#rawEnd']) {
     $(id).min = lo; $(id).max = hi;
   }
-  $('#gStart').value = lo;
+  $('#gStart').value = DEFAULT_START >= lo && DEFAULT_START <= hi ? DEFAULT_START : lo;
   $('#gEnd').value = hi;
   // the raw tab opens on the most recent year rather than 46 years of rows
   $('#rawStart').value = new Date(new Date(hi) - 3.15576e10).toISOString().slice(0, 10);
@@ -903,7 +917,6 @@ function wireSettings() {
     onSettingsChange();
   }));
 
-  $$('#quickRange button')[0].classList.add('on');
   renderSettingsSummary();
 }
 
