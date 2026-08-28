@@ -6,7 +6,7 @@
     "key": "nasdaq",
     "label": "나스닥 종합지수",
     "ticker": "^IXIC",
-    "fetched_at": "2026-08-29T06:52:08+09:00",
+    "fetched_at": "2026-08-29T08:04:51+09:00",
     "rows": 14008,
     "first": "1971-02-05",
     "last": "2026-08-28"
@@ -15,7 +15,7 @@
     "key": "vix",
     "label": "VIX 변동성지수",
     "ticker": "^VIX",
-    "fetched_at": "2026-08-29T06:52:09+09:00",
+    "fetched_at": "2026-08-29T08:04:51+09:00",
     "rows": 9233,
     "first": "1990-01-02",
     "last": "2026-08-28"
@@ -24,7 +24,7 @@
     "key": "bond",
     "label": "국채 펀드 (FGOVX)",
     "ticker": "FGOVX",
-    "fetched_at": "2026-08-29T06:52:04+09:00",
+    "fetched_at": "2026-08-29T08:04:45+09:00",
     "rows": 11759,
     "first": "1980-01-02",
     "last": "2026-08-27"
@@ -33,7 +33,7 @@
     "key": "bond_alt",
     "label": "美 7-10년 국채 ETF (참고)",
     "ticker": "IEF",
-    "fetched_at": "2026-08-29T06:52:06+09:00",
+    "fetched_at": "2026-08-29T08:04:47+09:00",
     "rows": 6060,
     "first": "2002-07-30",
     "last": "2026-08-28"
@@ -42,7 +42,7 @@
     "key": "sp500",
     "label": "S&P 500 (참고)",
     "ticker": "^GSPC",
-    "fetched_at": "2026-08-29T06:52:08+09:00",
+    "fetched_at": "2026-08-29T08:04:50+09:00",
     "rows": 16775,
     "first": "1960-01-04",
     "last": "2026-08-28"
@@ -51,7 +51,7 @@
     "key": "usdkrw",
     "label": "원/달러 환율",
     "ticker": "KRW=X",
-    "fetched_at": "2026-08-29T06:52:06+09:00",
+    "fetched_at": "2026-08-29T08:04:48+09:00",
     "rows": 5899,
     "first": "2003-12-01",
     "last": "2026-08-28"
@@ -60,7 +60,7 @@
     "key": "leader:AAPL",
     "label": "1등주 이력 – AAPL",
     "ticker": "AAPL",
-    "fetched_at": "2026-08-29T06:52:04+09:00",
+    "fetched_at": "2026-08-29T08:04:44+09:00",
     "rows": 11520,
     "first": "1980-12-12",
     "last": "2026-08-28"
@@ -69,7 +69,7 @@
     "key": "leader:GE",
     "label": "1등주 이력 – GE",
     "ticker": "GE",
-    "fetched_at": "2026-08-29T06:52:05+09:00",
+    "fetched_at": "2026-08-29T08:04:46+09:00",
     "rows": 16273,
     "first": "1962-01-02",
     "last": "2026-08-28"
@@ -78,7 +78,7 @@
     "key": "leader:IBM",
     "label": "1등주 이력 – IBM",
     "ticker": "IBM",
-    "fetched_at": "2026-08-29T06:52:06+09:00",
+    "fetched_at": "2026-08-29T08:04:47+09:00",
     "rows": 16273,
     "first": "1962-01-02",
     "last": "2026-08-28"
@@ -87,7 +87,7 @@
     "key": "leader:MSFT",
     "label": "1등주 이력 – MSFT",
     "ticker": "MSFT",
-    "fetched_at": "2026-08-29T06:52:07+09:00",
+    "fetched_at": "2026-08-29T08:04:48+09:00",
     "rows": 10194,
     "first": "1986-03-13",
     "last": "2026-08-28"
@@ -96,7 +96,7 @@
     "key": "leader:NVDA",
     "label": "1등주 이력 – NVDA",
     "ticker": "NVDA",
-    "fetched_at": "2026-08-29T06:52:07+09:00",
+    "fetched_at": "2026-08-29T08:04:49+09:00",
     "rows": 6943,
     "first": "1999-01-22",
     "last": "2026-08-28"
@@ -105,7 +105,7 @@
     "key": "leader:XOM",
     "label": "1등주 이력 – XOM",
     "ticker": "XOM",
-    "fetched_at": "2026-08-29T06:52:07+09:00",
+    "fetched_at": "2026-08-29T08:04:50+09:00",
     "rows": 16273,
     "first": "1962-01-02",
     "last": "2026-08-28"
@@ -341,9 +341,9 @@
     "trim_threshold": -10.0,
     "trim_fraction": 1.0
    },
-   "full_cagr": 0.17405310953039832,
-   "full_mdd": -0.42796495167128046,
-   "full_final_value": 53879869352.23165,
+   "full_cagr": 0.17405327817531302,
+   "full_mdd": -0.4279677181570025,
+   "full_final_value": 53880461644.79643,
    "full_sheltered": 0.10824829931972789,
    "full_trades_per_year": 6.688102893890675
   },
@@ -360,9 +360,9 @@
     "trim_threshold": -20.0,
     "trim_fraction": 1.0
    },
-   "full_cagr": 0.1671248005326238,
-   "full_mdd": -0.41372314924583864,
-   "full_final_value": 52995213314.102356,
+   "full_cagr": 0.16712504159907526,
+   "full_mdd": -0.4137229545011132,
+   "full_final_value": 52995596361.45248,
    "full_sheltered": 0.07729591836734694,
    "full_trades_per_year": 3.1939978563772775
   },
@@ -379,9 +379,9 @@
     "trim_threshold": -10.0,
     "trim_fraction": 1.0
    },
-   "full_cagr": 0.12164617918698961,
-   "full_mdd": -0.3132702319136126,
-   "full_final_value": 8753337831.434229,
+   "full_cagr": 0.12164623865405089,
+   "full_mdd": -0.3132706590211275,
+   "full_final_value": 8753377106.456497,
    "full_sheltered": 0.33741496598639453,
    "full_trades_per_year": 3.944265809217578
   },
@@ -398,9 +398,9 @@
     "trim_threshold": -999.0,
     "trim_fraction": 0.0
    },
-   "full_cagr": 0.13986604645370626,
-   "full_mdd": -0.673859480779786,
-   "full_final_value": 26563976270.34161,
+   "full_cagr": 0.13986607984318655,
+   "full_mdd": -0.6738594051585773,
+   "full_final_value": 26564001246.372654,
    "full_sheltered": 0.0,
    "full_trades_per_year": 2.4008574490889605
   }
@@ -462,6 +462,6 @@
  "test_start": "2006-01-01",
  "panel_start": "1980-01-02",
  "panel_end": "2026-08-28",
- "built_at": "2026-08-29T06:52:13+09:00",
+ "built_at": "2026-08-29T08:04:56+09:00",
  "static": true
 }
