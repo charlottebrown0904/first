@@ -127,9 +127,9 @@ class Params:
     """One complete trading rule. All thresholds are in percent."""
 
     # Defaults are the '공격 (수익 우선)' rule: the highest full-period return
-    # the walk-forward search produced - 17.3%/yr against 13.9% for holding the
+    # the walk-forward search produced - 17.5%/yr against 14.1% for holding the
     # leader outright, with a shallower hole too (-42.8% vs -67.4%). Fitted on
-    # 1980-2005 only; it then earned 17.5% on 2006-2026, which the search never
+    # 1980-2005 only; it then earned 17.9% on 2006-2026, which the search never
     # saw. VIX is switched off in this rule: the Nasdaq trigger already catches
     # what it would have caught, and the extra signal only added trades.
 
@@ -198,7 +198,7 @@ PRESETS = {
         "label": "공격 (수익 우선) · 기본",
         "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, "
                 "-42.8% 짜리 구덩이는 여전히 각오해야 합니다. 매매 연 6.7회.",
-        "full_cagr": 0.1731, "full_mdd": -0.428,
+        "full_cagr": 0.1750, "full_mdd": -0.428,
         "params": {"crash_lookback": 5, "crash_threshold": -6.0, "vix_threshold": 0.0,
                    "shelter_days": 10, "reentry_calm_days": 5, "trim_lookback": 60,
                    "trim_threshold": -10.0, "trim_fraction": 1.0},
@@ -207,7 +207,7 @@ PRESETS = {
         "label": "간결 (매매 최소)",
         "note": "수익을 0.7%p 내주는 대신 매매가 연 3.2회로 절반이고 낙폭도 조금 낮습니다. "
                 "손이 덜 가는 쪽을 원하면 이쪽.",
-        "full_cagr": 0.1662, "full_mdd": -0.414,
+        "full_cagr": 0.1681, "full_mdd": -0.414,
         "params": {"crash_lookback": 5, "crash_threshold": -8.0, "vix_threshold": 0.0,
                    "shelter_days": 10, "reentry_calm_days": 20, "trim_lookback": 60,
                    "trim_threshold": -20.0, "trim_fraction": 1.0},
@@ -224,7 +224,7 @@ PRESETS = {
     "buyhold": {
         "label": "비교용: 계속보유",
         "note": "1등주만 계속 들고 가기. 모든 회피 규칙을 끕니다.",
-        "full_cagr": 0.1390, "full_mdd": -0.674,
+        "full_cagr": 0.1408, "full_mdd": -0.674,
         "params": {"crash_lookback": 20, "crash_threshold": -999.0, "vix_threshold": 0.0,
                    "shelter_days": 20, "reentry_calm_days": 5, "trim_lookback": 60,
                    "trim_threshold": -999.0, "trim_fraction": 0.0},

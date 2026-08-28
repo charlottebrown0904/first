@@ -331,7 +331,7 @@
   "aggressive": {
    "label": "공격 (수익 우선) · 기본",
    "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, -42.8% 짜리 구덩이는 여전히 각오해야 합니다. 매매 연 6.7회.",
-   "full_cagr": 0.1731,
+   "full_cagr": 0.175,
    "full_mdd": -0.428,
    "params": {
     "crash_lookback": 5,
@@ -347,7 +347,7 @@
   "lowturn": {
    "label": "간결 (매매 최소)",
    "note": "수익을 0.7%p 내주는 대신 매매가 연 3.2회로 절반이고 낙폭도 조금 낮습니다. 손이 덜 가는 쪽을 원하면 이쪽.",
-   "full_cagr": 0.1662,
+   "full_cagr": 0.1681,
    "full_mdd": -0.414,
    "params": {
     "crash_lookback": 5,
@@ -379,7 +379,7 @@
   "buyhold": {
    "label": "비교용: 계속보유",
    "note": "1등주만 계속 들고 가기. 모든 회피 규칙을 끕니다.",
-   "full_cagr": 0.139,
+   "full_cagr": 0.1408,
    "full_mdd": -0.674,
    "params": {
     "crash_lookback": 20,
