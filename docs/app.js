@@ -426,9 +426,14 @@ function buildParamGrid() {
   }));
 
   const P = S.meta.presets || {};
-  $('#presetRow').innerHTML = Object.entries(P).map(([k, v]) =>
-    `<button class="preset" data-preset="${k}">${esc(v.label)}
-      <small>CAGR ${pct(v.full_cagr, 1)} · MDD ${pct(v.full_mdd, 0)}</small></button>`).join('');
+  // the numbers under each label are baked by engine.preset_stats(), so they
+  // always describe the panel this page is drawing — never a stale note
+  $('#presetRow').innerHTML = Object.entries(P).map(([k, v]) => {
+    const tpy = v.full_trades_per_year;
+    return `<button class="preset" data-preset="${k}">${esc(v.label)}
+      <small>CAGR ${pct(v.full_cagr, 1)} · MDD ${pct(v.full_mdd, 0)}` +
+      (tpy == null ? '' : ` · 매매 연 ${tpy.toFixed(1)}회`) + `</small></button>`;
+  }).join('');
   $$('.preset').forEach(b => b.addEventListener('click', () => applyPreset(b.dataset.preset)));
 }
 
@@ -743,6 +748,18 @@ async function loadRaw(page) {
   } catch (e) { st.textContent = '오류: ' + e.message; }
 }
 
+/* The second header row is pinned to the bottom of the first, and only the
+   browser knows how tall that is (the group labels wrap at narrow widths). It
+   has to be measured on a cell of that row alone: 날짜 · 신호 carry
+   rowspan="2", so measuring the first `th` reports the whole header and pins
+   row 2 one row too low, where it hangs over the data instead of above it. */
+function syncRawHead() {
+  const t = $('#rawTable');
+  const grp = t.querySelector('thead tr:first-child th.grp');
+  if (grp) t.style.setProperty('--rawHead1', grp.getBoundingClientRect().height + 'px');
+}
+window.addEventListener('resize', syncRawHead);
+
 function renderRaw(d) {
   const head =
     `<thead>
@@ -781,9 +798,7 @@ function renderRaw(d) {
 
   $('#rawTable').innerHTML = head + `<tbody>${body}</tbody>`;
 
-  // the second header row can only be pinned once we know how tall the first is
-  const h1 = $('#rawTable').querySelector('thead tr:first-child th');
-  if (h1) $('#rawTable').style.setProperty('--rawHead1', h1.getBoundingClientRect().height + 'px');
+  syncRawHead();
   $('.rawScroll').scrollTop = 0;
 
   const P = d.pages, p = d.page;

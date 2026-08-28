@@ -192,31 +192,33 @@ TEST_START = "2006-01-01"
 
 
 # Points on the return/drawdown frontier the search produced. The UI offers
-# these as one-click presets; `full_*` are full-period results for the label.
+# these as one-click presets.
+#
+# Only the rule and the prose live here. The headline numbers on the buttons
+# (CAGR·MDD·매매 빈도) are computed from the panel by engine.preset_stats() —
+# they used to be typed in here and drifted out of date with every day of new
+# data, so no figure that moves with the data belongs in this file.
 PRESETS = {
     "aggressive": {
         "label": "공격 (수익 우선) · 기본",
         "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, "
-                "-42.8% 짜리 구덩이는 여전히 각오해야 합니다. 매매 연 6.7회.",
-        "full_cagr": 0.1750, "full_mdd": -0.428,
+                "40% 를 넘는 구덩이는 여전히 각오해야 합니다.",
         "params": {"crash_lookback": 5, "crash_threshold": -6.0, "vix_threshold": 0.0,
                    "shelter_days": 10, "reentry_calm_days": 5, "trim_lookback": 60,
                    "trim_threshold": -10.0, "trim_fraction": 1.0},
     },
     "lowturn": {
         "label": "간결 (매매 최소)",
-        "note": "수익을 0.7%p 내주는 대신 매매가 연 3.2회로 절반이고 낙폭도 조금 낮습니다. "
-                "손이 덜 가는 쪽을 원하면 이쪽.",
-        "full_cagr": 0.1681, "full_mdd": -0.414,
+        "note": "수익을 1%p 남짓 내주는 대신 매매가 공격 규칙의 절반이고 낙폭도 조금 "
+                "낮습니다. 손이 덜 가는 쪽을 원하면 이쪽.",
         "params": {"crash_lookback": 5, "crash_threshold": -8.0, "vix_threshold": 0.0,
                    "shelter_days": 10, "reentry_calm_days": 20, "trim_lookback": 60,
                    "trim_threshold": -20.0, "trim_fraction": 1.0},
     },
     "defensive": {
         "label": "방어 (낙폭 우선)",
-        "note": "낙폭을 -31% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 "
-                "수익률은 5%p 포기합니다.",
-        "full_cagr": 0.1217, "full_mdd": -0.313,
+        "note": "낙폭을 가장 낮게 누릅니다. 대신 전체 기간의 3분의 1을 국채에서 보내고 "
+                "수익률을 5%p 남짓 포기합니다.",
         "params": {"crash_lookback": 5, "crash_threshold": -6.0, "vix_threshold": 35.0,
                    "shelter_days": 60, "reentry_calm_days": 20, "trim_lookback": 60,
                    "trim_threshold": -10.0, "trim_fraction": 1.0},
@@ -224,7 +226,6 @@ PRESETS = {
     "buyhold": {
         "label": "비교용: 계속보유",
         "note": "1등주만 계속 들고 가기. 모든 회피 규칙을 끕니다.",
-        "full_cagr": 0.1408, "full_mdd": -0.674,
         "params": {"crash_lookback": 20, "crash_threshold": -999.0, "vix_threshold": 0.0,
                    "shelter_days": 20, "reentry_calm_days": 5, "trim_lookback": 60,
                    "trim_threshold": -999.0, "trim_fraction": 0.0},

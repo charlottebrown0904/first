@@ -22,7 +22,7 @@ from flask import Flask, jsonify, request, send_from_directory
 warnings.filterwarnings("ignore")
 
 from src import advisor, datasource, engine, leaders, optimize
-from src.config import Params, PRESETS, ROOT, SEARCH_GRID, TRAIN_END, TEST_START
+from src.config import Params, ROOT, SEARCH_GRID, TRAIN_END, TEST_START
 
 app = Flask(__name__, static_folder=str(ROOT / "docs"), static_url_path="")
 # preset and indicator order carries meaning; don't let jsonify alphabetise it
@@ -258,7 +258,7 @@ def api_optimize():
 
 @app.get("/api/raw")
 def api_raw():
-    """날짜별 원자료. 최신 날짜가 먼저 옵니다."""
+    """날짜별 Raw Data. 최신 날짜가 먼저 옵니다."""
     p = params_from_query()
     df = raw_table()
     start = request.args.get("start") or None
@@ -360,7 +360,7 @@ def api_meta():
         "leaders": leaders.load_timeline(),
         "live_ranking": leaders.live_ranking(),
         "defaults": Params().to_dict(),
-        "presets": PRESETS,
+        "presets": engine.preset_stats(panel()),
         "grid": SEARCH_GRID,
         "train_end": TRAIN_END, "test_start": TEST_START,
         "panel_start": str(panel().index[0].date()),

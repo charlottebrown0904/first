@@ -330,9 +330,7 @@
  "presets": {
   "aggressive": {
    "label": "공격 (수익 우선) · 기본",
-   "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, -42.8% 짜리 구덩이는 여전히 각오해야 합니다. 매매 연 6.7회.",
-   "full_cagr": 0.175,
-   "full_mdd": -0.428,
+   "note": "기본 규칙입니다. 전체구간 수익이 가장 높고 낙폭도 계속보유보다 낮지만, 40% 를 넘는 구덩이는 여전히 각오해야 합니다.",
    "params": {
     "crash_lookback": 5,
     "crash_threshold": -6.0,
@@ -342,13 +340,16 @@
     "trim_lookback": 60,
     "trim_threshold": -10.0,
     "trim_fraction": 1.0
-   }
+   },
+   "full_cagr": 0.1749874528791544,
+   "full_mdd": -0.4279663351795614,
+   "full_final_value": 55892554545.20284,
+   "full_sheltered": 0.10825750488987158,
+   "full_trades_per_year": 6.688102893890675
   },
   "lowturn": {
    "label": "간결 (매매 최소)",
-   "note": "수익을 0.7%p 내주는 대신 매매가 연 3.2회로 절반이고 낙폭도 조금 낮습니다. 손이 덜 가는 쪽을 원하면 이쪽.",
-   "full_cagr": 0.1681,
-   "full_mdd": -0.414,
+   "note": "수익을 1%p 남짓 내주는 대신 매매가 공격 규칙의 절반이고 낙폭도 조금 낮습니다. 손이 덜 가는 쪽을 원하면 이쪽.",
    "params": {
     "crash_lookback": 5,
     "crash_threshold": -8.0,
@@ -358,13 +359,16 @@
     "trim_lookback": 60,
     "trim_threshold": -20.0,
     "trim_fraction": 1.0
-   }
+   },
+   "full_cagr": 0.16805349070541498,
+   "full_mdd": -0.4137227618371302,
+   "full_final_value": 54975174299.35748,
+   "full_sheltered": 0.07730249170847861,
+   "full_trades_per_year": 3.1939978563772775
   },
   "defensive": {
    "label": "방어 (낙폭 우선)",
-   "note": "낙폭을 -31% 까지 낮춥니다. 대신 3분의 1을 국채에서 보내고 수익률은 5%p 포기합니다.",
-   "full_cagr": 0.1217,
-   "full_mdd": -0.313,
+   "note": "낙폭을 가장 낮게 누릅니다. 대신 전체 기간의 3분의 1을 국채에서 보내고 수익률을 5%p 남짓 포기합니다.",
    "params": {
     "crash_lookback": 5,
     "crash_threshold": -6.0,
@@ -374,13 +378,16 @@
     "trim_lookback": 60,
     "trim_threshold": -10.0,
     "trim_fraction": 1.0
-   }
+   },
+   "full_cagr": 0.12168022653951449,
+   "full_mdd": -0.3132699934933241,
+   "full_final_value": 8762990830.26399,
+   "full_sheltered": 0.33735861893018115,
+   "full_trades_per_year": 3.944265809217578
   },
   "buyhold": {
    "label": "비교용: 계속보유",
    "note": "1등주만 계속 들고 가기. 모든 회피 규칙을 끕니다.",
-   "full_cagr": 0.1408,
-   "full_mdd": -0.674,
    "params": {
     "crash_lookback": 20,
     "crash_threshold": -999.0,
@@ -390,7 +397,12 @@
     "trim_lookback": 60,
     "trim_threshold": -999.0,
     "trim_fraction": 0.0
-   }
+   },
+   "full_cagr": 0.14077117399993422,
+   "full_mdd": -0.6738593848430208,
+   "full_final_value": 27556141764.659153,
+   "full_sheltered": 0.0,
+   "full_trades_per_year": 2.4008574490889605
   }
  },
  "grid": {
