@@ -1003,7 +1003,7 @@ async function loadMeta() {
     m.provenance.series.map(s => `<tr><td>${esc(s.label)}</td>
       <td class="mono">${esc(s.ticker)}</td><td>${(s.rows ?? 0).toLocaleString()}</td>
       <td>${s.first ?? '–'}</td><td>${s.last ?? '–'}</td>
-      <td>${(s.fetched_at ?? '–').replace('T', ' ')}</td></tr>`).join('') + '</tbody>';
+      <td>${fmtKST(s.fetched_at)}</td></tr>`).join('') + '</tbody>';
 
   $('#caveatList').innerHTML =
     (m.provenance.caveats || []).map(c => `<li>${esc(c)}</li>`).join('');
@@ -1073,10 +1073,23 @@ $('#btnRefresh').addEventListener('click', async () => {
    better first thing to see than a 1980 start nobody can act on. */
 const DEFAULT_START = '2019-01-02';
 
-const todayISO = () => {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+/* 화면에 나오는 시각은 전부 한국 시간(UTC+9)입니다. 보는 사람이 어느 시간대에
+   있든, 데이터를 언제 받았는지는 같은 시각으로 읽혀야 합니다. */
+const KST_MS = 9 * 3600000;
+
+/* 파이썬이 남긴 기록 시각(2026-08-28T09:00:30+09:00)을 한국 시간으로 찍습니다.
+   표준시가 붙어 있으면 어느 시간대로 적혔든 한국 시간으로 옮기고, 표준시가 없는
+   예전 기록은 무엇이었는지 알 수 없으므로 KST 를 붙이지 않고 그대로 보여줍니다. */
+const fmtKST = (s, len = 19) => {
+  if (!s) return '–';
+  if (!/(Z|[+-]\d{2}:?\d{2})$/.test(s)) return String(s).replace('T', ' ');
+  const t = new Date(s);
+  if (isNaN(t)) return s;
+  return new Date(t.getTime() + KST_MS).toISOString().slice(0, len).replace('T', ' ') + ' KST';
 };
+
+/* 오늘이 며칠이냐도 한국 시간 기준입니다 (기본 종료일·달력 최대값) */
+const todayISO = () => new Date(Date.now() + KST_MS).toISOString().slice(0, 10);
 
 function wireSettings() {
   const { panel_start: lo, panel_end: hi } = S.meta;
@@ -1130,7 +1143,7 @@ async function detectServer() {
     S.params = { ...S.meta.defaults };
     $('#panelRange').textContent = `${S.meta.panel_start} ~ ${S.meta.panel_end}`;
     if (S.meta.built_at)
-      $('#builtAt').textContent = `데이터 기준 ${S.meta.built_at.slice(0, 10)}`;
+      $('#builtAt').textContent = `데이터 기준 ${fmtKST(S.meta.built_at, 16)}`;
     buildParamGrid();
     wireSettings();
     S.hasServer = await detectServer();

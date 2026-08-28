@@ -1,10 +1,27 @@
 """Central configuration: tickers, date ranges, and strategy parameter defaults."""
 from __future__ import annotations
 
+import datetime as dt
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# ------------------------------------------------------------------- 시각
+# 화면과 로그에 찍히는 시각은 전부 한국 시간입니다. 이 값들은 대개 GitHub
+# Actions 러너(UTC)에서 만들어지므로 그냥 now() 를 쓰면 배포본의 '마지막
+# 수신' 이 9시간 전으로 찍힙니다. 시각을 기록하는 곳은 모두 now_kst() 를
+# 쓰고, 표준시를 붙여 남깁니다(+09:00) — 나중에 읽는 쪽이 헷갈리지 않게.
+KST = dt.timezone(dt.timedelta(hours=9), "KST")
+
+
+def now_kst() -> dt.datetime:
+    return dt.datetime.now(KST)
+
+
+def stamp_kst() -> str:
+    """기록용 한국 시간 문자열: 2026-08-28T09:00:30+09:00"""
+    return now_kst().isoformat(timespec="seconds")
 DATA = ROOT / "data"
 CACHE = DATA / "cache"
 SEED = DATA / "seed"
