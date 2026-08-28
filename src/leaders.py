@@ -88,6 +88,10 @@ def resolve_live_leader(quiet: bool = False) -> dict | None:
 
     top = max(caps, key=lambda k: caps[k][0])
     payload = {
+        # 시각이 아니라 '이 순위가 맞았던 장 날짜' 입니다. 러너가 도는
+        # 23:00 UTC 는 그날 미국장 마감 직후라 UTC 날짜가 곧 그 거래일이고,
+        # 이 값은 leader_series() 가 거래일과 맞대는 기준이 됩니다. 한국
+        # 날짜로 바꾸면 하루 앞서 찍혀 그날 종가에 반영되지 않습니다.
         "as_of": dt.date.today().isoformat(),
         "ticker": top,
         "name": caps[top][1],

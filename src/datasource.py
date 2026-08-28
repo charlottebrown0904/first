@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from .config import (CACHE, SERIES, REMOVED_SERIES, REVIEWED_SHELTERS,
-                     BACKTEST_START, VIX_PROXY_BEFORE)
+                     BACKTEST_START, VIX_PROXY_BEFORE, now_kst, stamp_kst)
 from . import leaders
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -35,7 +35,7 @@ def _manifest() -> dict:
 def _record(ticker: str, df: pd.DataFrame, rows: int) -> None:
     m = _manifest()
     m[ticker] = {
-        "fetched_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "fetched_at": stamp_kst(),
         "rows": rows,
         "first": str(df.index[0].date()) if rows else None,
         "last": str(df.index[-1].date()) if rows else None,
@@ -51,8 +51,15 @@ def _is_fresh(ticker: str) -> bool:
     entry = _manifest().get(ticker)
     if not entry or not _cache_path(ticker).exists():
         return False
-    age = dt.datetime.now() - dt.datetime.fromisoformat(entry["fetched_at"])
-    return age.total_seconds() < _STALE_HOURS * 3600
+    return _age(entry["fetched_at"]).total_seconds() < _STALE_HOURS * 3600
+
+
+def _age(stamp: str) -> dt.timedelta:
+    """캐시 나이. 표준시가 없는 예전 기록은 그때 규칙대로 로컬 시간으로 봅니다."""
+    t = dt.datetime.fromisoformat(stamp)
+    if t.tzinfo is None:
+        return dt.datetime.now() - t
+    return now_kst() - t
 
 
 def fetch_one(ticker: str, force: bool = False, quiet: bool = False) -> pd.Series:

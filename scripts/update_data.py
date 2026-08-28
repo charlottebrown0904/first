@@ -4,16 +4,17 @@
 
     python scripts/update_data.py
 """
-import sys, os, warnings, datetime as dt
+import sys, os, warnings
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 warnings.filterwarnings("ignore")
 try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 
 from src import datasource, leaders
+from src.config import now_kst
 
 if __name__ == "__main__":
-    print(f"=== {dt.datetime.now():%Y-%m-%d %H:%M:%S} 지표 갱신 ===")
+    print(f"=== {now_kst():%Y-%m-%d %H:%M:%S} KST 지표 갱신 ===")
     datasource.refresh_all(force=True, quiet=False)
 
     panel = datasource.build_panel(force=True)

@@ -18,7 +18,6 @@ import json
 import shutil
 import sys
 import os
-import datetime as dt
 import warnings
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,7 +30,7 @@ except Exception:
 import numpy as np
 
 from src import datasource, engine, leaders
-from src.config import Params, ROOT, RESULTS, SEARCH_GRID, TRAIN_END, TEST_START
+from src.config import Params, ROOT, RESULTS, SEARCH_GRID, TRAIN_END, TEST_START, stamp_kst
 
 DOCS = ROOT / "docs"
 WEB = ROOT / "web"
@@ -82,7 +81,7 @@ def build_meta_json() -> dict:
         "test_start": TEST_START,
         "panel_start": str(panel.index[0].date()),
         "panel_end": str(panel.index[-1].date()),
-        "built_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "built_at": stamp_kst(),          # 한국 시간 (러너는 UTC 로 돕니다)
         "static": True,
     }
 
