@@ -30,8 +30,8 @@ except Exception:
 
 import numpy as np
 
-from src import datasource, leaders
-from src.config import Params, PRESETS, ROOT, RESULTS, SEARCH_GRID, TRAIN_END, TEST_START
+from src import datasource, engine, leaders
+from src.config import Params, ROOT, RESULTS, SEARCH_GRID, TRAIN_END, TEST_START
 
 DOCS = ROOT / "docs"
 WEB = ROOT / "web"
@@ -76,7 +76,7 @@ def build_meta_json() -> dict:
         "leaders": leaders.load_timeline(),
         "live_ranking": leaders.live_ranking(),
         "defaults": Params().to_dict(),
-        "presets": PRESETS,
+        "presets": engine.preset_stats(panel),
         "grid": SEARCH_GRID,
         "train_end": TRAIN_END,
         "test_start": TEST_START,

@@ -199,7 +199,7 @@ const routes = {
   },
 };
 
-/* ───────────────────────── 원자료: 전일 대비 / 최고점 대비 ─────────────── */
+/* ──────────────────────── Raw Data: 전일 대비 / 최고점 대비 ────────────── */
 /* 최고점은 보고 있는 구간이 아니라 전체 기록의 누적 최고 기준입니다. 한 번
    만들어 캐시합니다. 1등주는 종목별로 자기 기록에 대해 계산합니다. */
 function rawTable(P) {
@@ -367,7 +367,7 @@ async function call(path, params = {}) {
 
 function csvUrl() { return 'data/panel.json'; }
 
-/* 원자료 CSV 를 브라우저에서 직접 만들어 내려받게 합니다 (서버가 없으므로) */
+/* Raw Data CSV 를 브라우저에서 직접 만들어 내려받게 합니다 (서버가 없으므로) */
 async function downloadCsv(start, end) {
   const P = await panel();
   const t = rawTable(P);

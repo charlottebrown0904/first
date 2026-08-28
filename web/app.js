@@ -426,9 +426,14 @@ function buildParamGrid() {
   }));
 
   const P = S.meta.presets || {};
-  $('#presetRow').innerHTML = Object.entries(P).map(([k, v]) =>
-    `<button class="preset" data-preset="${k}">${esc(v.label)}
-      <small>CAGR ${pct(v.full_cagr, 1)} · MDD ${pct(v.full_mdd, 0)}</small></button>`).join('');
+  // the numbers under each label are baked by engine.preset_stats(), so they
+  // always describe the panel this page is drawing — never a stale note
+  $('#presetRow').innerHTML = Object.entries(P).map(([k, v]) => {
+    const tpy = v.full_trades_per_year;
+    return `<button class="preset" data-preset="${k}">${esc(v.label)}
+      <small>CAGR ${pct(v.full_cagr, 1)} · MDD ${pct(v.full_mdd, 0)}` +
+      (tpy == null ? '' : ` · 매매 연 ${tpy.toFixed(1)}회`) + `</small></button>`;
+  }).join('');
   $$('.preset').forEach(b => b.addEventListener('click', () => applyPreset(b.dataset.preset)));
 }
 
@@ -743,6 +748,18 @@ async function loadRaw(page) {
   } catch (e) { st.textContent = '오류: ' + e.message; }
 }
 
+/* The second header row is pinned to the bottom of the first, and only the
+   browser knows how tall that is (the group labels wrap at narrow widths). It
+   has to be measured on a cell of that row alone: 날짜 · 신호 carry
+   rowspan="2", so measuring the first `th` reports the whole header and pins
+   row 2 one row too low, where it hangs over the data instead of above it. */
+function syncRawHead() {
+  const t = $('#rawTable');
+  const grp = t.querySelector('thead tr:first-child th.grp');
+  if (grp) t.style.setProperty('--rawHead1', grp.getBoundingClientRect().height + 'px');
+}
+window.addEventListener('resize', syncRawHead);
+
 function renderRaw(d) {
   const head =
     `<thead>
@@ -781,9 +798,7 @@ function renderRaw(d) {
 
   $('#rawTable').innerHTML = head + `<tbody>${body}</tbody>`;
 
-  // the second header row can only be pinned once we know how tall the first is
-  const h1 = $('#rawTable').querySelector('thead tr:first-child th');
-  if (h1) $('#rawTable').style.setProperty('--rawHead1', h1.getBoundingClientRect().height + 'px');
+  syncRawHead();
   $('.rawScroll').scrollTop = 0;
 
   const P = d.pages, p = d.page;
@@ -894,8 +909,8 @@ function renderVerdict(d) {
         2000년대(잃어버린 10년)에는 압도적이지만, 2010년대와 2020년대 강세장에서는
         오히려 계속보유에 집니다. 낙폭 감소는 <b>모든</b> 10년 구간에서 나타납니다.</li>
       <li>시작 연도를 1980~2024년으로 45번 바꿔보면, 계속보유를 이긴 것은
-        수익률 기준 <b>22/45</b>, 최종 평가액 기준 <b>16/45</b> 뿐입니다.
-        반면 최대 낙폭은 <b>45/45</b> 전부에서 개선됐습니다(평균 18.6%p).
+        수익률 기준 <b>23/45</b>, 최종 평가액 기준 <b>18/45</b> 뿐입니다.
+        반면 최대 낙폭은 <b>45/45</b> 전부에서 개선됐습니다(평균 18.1%p).
         즉 <b>"언제 시작해도 더 번다"는 거짓, "언제 시작해도 덜 잃는다"는 참</b>입니다.</li>
       <li>이 규칙은 <b>결국 과거에 맞춰 고른 것</b>입니다. 학습·검증 분리와 이웃 안정성
         검사로 걸러냈지만, 미래가 과거와 다르면 통하지 않습니다.</li>

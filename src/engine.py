@@ -23,7 +23,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .config import Params
+from .config import Params, PRESETS
 
 REBALANCE_BAND = 0.02       # don't trade for less than a 2%p drift
 TRADING_DAYS = 252
@@ -331,3 +331,29 @@ def buy_and_hold(panel: pd.DataFrame, p: Params, asset: str = "leader",
     sub["leader"] = asset
     sub = sub.dropna(subset=["leader_px"])
     return run(sub, flat, start, end)
+
+
+def preset_stats(panel: pd.DataFrame) -> dict:
+    """PRESETS with their full-period headline numbers filled in.
+
+    These numbers used to be typed into config.py by hand, and went stale every
+    time the panel grew a day — the buttons said 17.31% while the chart behind
+    them drew 17.50%. Computing them off the panel that is being served means
+    the label can never disagree with the backtest it launches.
+
+    One full-period run per preset, four of them, ~0.1s in total: cheap enough
+    to do at build time and at /api/meta.
+    """
+    out = {}
+    for key, preset in PRESETS.items():
+        p = Params.from_dict({**Params().to_dict(), **preset["params"]})
+        r = run(panel, p)
+        out[key] = {
+            **preset,
+            "full_cagr": float(r["cagr"]),
+            "full_mdd": float(r["mdd"]),
+            "full_final_value": float(r["final_value"]),
+            "full_sheltered": float(r["pct_days_sheltered"]),
+            "full_trades_per_year": float(r["n_trades"]) / float(r["years"]),
+        }
+    return out

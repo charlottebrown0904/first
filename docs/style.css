@@ -353,10 +353,11 @@ footer strong{color:var(--warn-ink)}
 }
 .steps .note{display:block; font-size:.76rem; color:var(--fg3); margin-top:.15rem}
 
-/* ── 원자료 표: 머리글과 날짜 열 고정 ──────────────────────────
+/* ── Raw Data 표: 머리글과 날짜 열 고정 ────────────────────────
    표가 자체 스크롤 박스를 가져야 sticky 가 페이지가 아니라 표 안에서
    먹습니다. 머리글이 두 줄이라 둘째 줄의 top 은 첫 줄 높이만큼 내려야
-   하는데, 그 높이는 렌더 후에야 알 수 있어 JS 가 --rawHead1 로 넣습니다. */
+   하는데, 그 높이는 렌더 후에야 알 수 있어 app.js 의 syncRawHead() 가
+   --rawHead1 로 넣습니다 (첫 줄만 재야 합니다 — 거기 주석 참고). */
 .rawScroll{
   max-height:72vh; overflow:auto;
   border:1px solid var(--line); border-radius:9px;
