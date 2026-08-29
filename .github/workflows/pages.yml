@@ -10,6 +10,12 @@ name: 시세 갱신 & 배포
 #   main 푸시 -> 갱신 없이 지금 docs/ 를 배포
 #   수동 실행 -> 예약 실행과 같음
 #
+# 배포처는 두 곳입니다. Pages 는 아래 잡이 직접 올리고, Vercel 은 이 잡이 미는
+# 커밋을 깃허브 웹훅으로 받아 스스로 배포합니다 (웹훅은 GITHUB_TOKEN 푸시에도
+# 옵니다 - 트리거되지 않는 것은 다른 '워크플로' 이지 웹훅이 아닙니다).
+# 그래서 아래 검사들이 두 배포처의 공통 관문이 됩니다: 검사에 걸리면 커밋이
+# 없고, 커밋이 없으면 Pages 도 Vercel 도 예전 것을 그대로 서빙합니다.
+#
 # 23:00 UTC = 미국 동부 18~19시(마감 후), 한국 시간으로 다음날 아침 8시입니다.
 # 예약 실행은 기본 브랜치에서만 동작하므로, 이 파일이 main 에 병합된 뒤부터 돕니다.
 on:
@@ -100,4 +106,7 @@ jobs:
 
       - name: 요약
         if: always()
-        run: python scripts/ci_check_panel.py summary >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          python scripts/ci_check_panel.py summary >> "$GITHUB_STEP_SUMMARY"
+          echo "- 배포: GitHub Pages 는 이 잡이, Vercel 은 위 커밋을 받아 각각 올립니다." \
+            >> "$GITHUB_STEP_SUMMARY"

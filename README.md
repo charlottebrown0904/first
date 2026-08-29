@@ -115,6 +115,28 @@ scripts/build_static.py   →  docs/
 통과하면 엔진 자체검사(9건)까지 돌린 뒤에야 커밋합니다.
 휴장일이라 값이 그대로면 커밋하지 않고 배포만 합니다.
 
+### 배포처는 두 곳입니다
+
+같은 `docs/` 를 **GitHub Pages** 와 **Vercel** 이 각각 올립니다. 둘은 같은 커밋을
+보므로 충돌하지 않고, 한쪽이 죽어도 다른 쪽이 삽니다.
+
+| | 무엇이 올리는가 |
+|---|---|
+| GitHub Pages | 위 워크플로가 잡 안에서 직접 (`deploy-pages`) |
+| Vercel | 그 잡이 민 커밋을 깃허브 웹훅으로 받아 스스로 |
+
+`GITHUB_TOKEN` 으로 민 푸시가 트리거하지 못하는 것은 **다른 워크플로**이지
+웹훅이 아닙니다. 그래서 Vercel 은 봇 커밋에도 정상적으로 반응합니다.
+
+중요한 것은, **검사 관문이 두 배포처에 똑같이 걸린다**는 점입니다. 데이터 검사나
+엔진 자체검사에 걸리면 커밋 자체가 없고, 커밋이 없으면 Pages 도 Vercel 도 직전
+배포를 그대로 서빙합니다. 깨진 데이터가 어느 쪽으로도 나가지 않습니다.
+
+Vercel 쪽 설정은 저장소 루트의 `vercel.json` 한 장이 전부입니다 — 빌드 없이
+`docs/` 를 그대로 서빙하고, 매일 바뀌는 파일이라 캐시는 항상 재검증합니다.
+대시보드에서는 저장소를 연결하고 **Framework Preset 을 Other** 로 두기만 하면
+됩니다 (Build Command·Output Directory 는 `vercel.json` 이 정합니다).
+
 탐색 결과(`optimization.json`)는 매일 다시 돌리지 않습니다. 규칙이 하루 단위로
 흔들리면 그건 규칙이 아니기 때문입니다. 다시 돌리려면
 `python scripts/optimize_run.py 12000` 을 직접 실행하고 커밋하세요.
@@ -137,7 +159,7 @@ scripts/build_static.py   →  docs/
 | | 조회를 누르면 |
 |---|---|
 | 로컬 (`python app.py`) | 온라인에서 **최신 종가를 새로 받아** `docs/` 를 다시 굽고 화면을 갱신합니다 |
-| 배포본 (GitHub Pages) | 구워진 시세로 **종료일까지 다시 계산**합니다. 서버가 없어 새 시세를 받을 수는 없습니다 |
+| 배포본 (Pages · Vercel) | 구워진 시세로 **종료일까지 다시 계산**합니다. 서버가 없어 새 시세를 받을 수는 없습니다 |
 
 종료일이 보유한 시세보다 뒤면 설정 바 아래에 **어느 날짜 종가까지 반영됐는지**를
 띄웁니다. 요청한 종료일과 실제 데이터가 조용히 달라지는 일이 없도록 하기 위해서입니다.
@@ -391,6 +413,7 @@ scripts/build_static.py  docs/ 굽기
 scripts/verify_js_engine.py  파이썬 기준값 굽기
 scripts/ci_check_panel.py    자동 갱신이 깨진 데이터를 배포하지 못하게 하는 관문
 .github/workflows/pages.yml  매일 갱신 + 배포
+vercel.json            Vercel 배포 설정 (빌드 없이 docs/ 서빙)
 data/seed/leaders.json 1위 교체 이력 (직접 수정 가능)
 data/cache/            받아온 시세 CSV + manifest
 data/results/          탐색 결과 JSON
