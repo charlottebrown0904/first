@@ -1,49 +1,35 @@
-name: 시세 갱신 & 배포
+name: 시세 갱신
 
-# 하나의 워크플로가 갱신과 배포를 같이 합니다.
+# 매일 시세를 새로 받아 docs/ 를 다시 굽고, 검사를 통과하면 커밋합니다.
 #
-# 나눠 두면 봇이 만든 커밋이 배포를 못 거는 문제가 생깁니다. GITHUB_TOKEN 으로
-# 민 푸시는 다른 워크플로를 트리거하지 않기 때문입니다. 그래서 한 잡 안에서
-# 시세를 받고, 커밋하고, 그 자리에서 바로 배포합니다.
-#
-#   예약 실행 -> 시세를 새로 받아 커밋한 뒤 배포
-#   main 푸시 -> 갱신 없이 지금 docs/ 를 배포
+#   예약 실행 -> 시세를 새로 받아 검사한 뒤 커밋
 #   수동 실행 -> 예약 실행과 같음
 #
-# 배포처는 두 곳입니다. Pages 는 아래 잡이 직접 올리고, Vercel 은 이 잡이 미는
-# 커밋을 깃허브 웹훅으로 받아 스스로 배포합니다 (웹훅은 GITHUB_TOKEN 푸시에도
-# 옵니다 - 트리거되지 않는 것은 다른 '워크플로' 이지 웹훅이 아닙니다).
-# 그래서 아래 검사들이 두 배포처의 공통 관문이 됩니다: 검사에 걸리면 커밋이
-# 없고, 커밋이 없으면 Pages 도 Vercel 도 예전 것을 그대로 서빙합니다.
+# 배포는 이 워크플로가 하지 않습니다. Vercel 이 여기서 미는 커밋을 깃허브
+# 웹훅으로 받아 스스로 올립니다. GITHUB_TOKEN 으로 민 푸시가 트리거하지 못하는
+# 것은 다른 '워크플로' 이지 웹훅이 아니라서, 봇 커밋에도 정상적으로 반응합니다.
+#
+# 그래서 아래 검사들이 곧 배포 관문입니다. 검사에 걸리면 커밋이 없고, 커밋이
+# 없으면 Vercel 은 직전 배포를 그대로 서빙합니다. 깨진 데이터가 나가지 않습니다.
 #
 # 23:00 UTC = 미국 동부 18~19시(마감 후), 한국 시간으로 다음날 아침 8시입니다.
 # 예약 실행은 기본 브랜치에서만 동작하므로, 이 파일이 main 에 병합된 뒤부터 돕니다.
 on:
   schedule:
     - cron: "0 23 * * 1-5"      # 미국 거래일(월~금) 마감 후
-  push:
-    branches: [main]
-    paths:
-      - "docs/**"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
   contents: write               # 갱신된 시세를 커밋
-  pages: write                  # Pages 배포
-  id-token: write               # 배포 인증
 
 concurrency:
-  group: pages
+  group: update-data
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  update:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -53,35 +39,28 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      # ── 시세 갱신 (예약 · 수동 실행일 때만) ──────────────────────────
       - name: 의존성 설치
-        if: github.event_name != 'push'
         run: pip install -r requirements.txt
 
       - name: 갱신 전 상태 기록
-        if: github.event_name != 'push'
         id: before
         run: python scripts/ci_check_panel.py before >> "$GITHUB_OUTPUT"
 
       - name: 시세 내려받기 + docs 다시 굽기
-        if: github.event_name != 'push'
         run: python scripts/build_static.py
 
       - name: 받아온 데이터 검사
         # 데이터 제공처가 잠깐 이상해도 깨진 패널을 배포하지 않도록,
         # 커밋 전에 최소한의 사실 확인을 합니다. 실패하면 여기서 멈춥니다.
-        if: github.event_name != 'push'
         env:
           BEFORE_ROWS: ${{ steps.before.outputs.rows }}
           BEFORE_LAST: ${{ steps.before.outputs.last }}
         run: python scripts/ci_check_panel.py after
 
       - name: 엔진 자체검사
-        if: github.event_name != 'push'
         run: python scripts/selftest.py
 
       - name: 바뀐 게 있으면 커밋
-        if: github.event_name != 'push'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -94,19 +73,9 @@ jobs:
           git commit -m "시세 갱신: ${LAST} 종가까지" -m "scripts/build_static.py 자동 실행 결과입니다."
           git push
 
-      # ── 배포 (항상) ──────────────────────────────────────────────
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
-
-      - id: deploy
-        uses: actions/deploy-pages@v4
-
       - name: 요약
         if: always()
         run: |
           python scripts/ci_check_panel.py summary >> "$GITHUB_STEP_SUMMARY"
-          echo "- 배포: GitHub Pages 는 이 잡이, Vercel 은 위 커밋을 받아 각각 올립니다." \
+          echo "- 배포: 위 커밋을 Vercel 이 받아 올립니다 (커밋이 없으면 직전 배포 유지)." \
             >> "$GITHUB_STEP_SUMMARY"

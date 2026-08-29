@@ -1,8 +1,8 @@
-"""GitHub Pages 용 정적 사이트를 docs/ 에 만듭니다.
+"""배포용 정적 사이트를 docs/ 에 만듭니다 (Vercel 이 이 폴더를 서빙합니다).
 
     python scripts/build_static.py
 
-Pages 는 정적 파일만 서빙하므로 Flask API 를 쓸 수 없습니다. 그래서 백테스트에
+정적 호스팅은 파일만 서빙하므로 Flask API 를 쓸 수 없습니다. 그래서 백테스트에
 필요한 시세를 통째로 JSON 으로 굽고, 계산은 브라우저의 web/engine.js 가 합니다
 (파이썬 엔진과 같은 규칙을 옮긴 것이며, scripts/verify_js_engine.py 로 두
 구현이 같은 값을 내는지 확인합니다).
@@ -137,11 +137,11 @@ def main(fetch: bool = True) -> None:
     from scripts.verify_js_engine import main as bake_ref
     bake_ref()
 
-    # Jekyll would otherwise ignore files it does not recognise
+    # Vercel 은 필요 없지만, GitHub Pages 로 되돌릴 때 Jekyll 이 밑줄로 시작하는
+    # 파일을 무시하지 않도록 남겨 둡니다. 빈 파일이라 비용이 없습니다.
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     print(f"\n완료 → {DOCS}")
-    print("배포는 .github/workflows/pages.yml 이 합니다 "
-          "(Settings → Pages → Source: GitHub Actions).")
+    print("배포는 Vercel 이 합니다 — main 에 커밋이 올라가면 자동으로 올립니다.")
 
 
 if __name__ == "__main__":
