@@ -134,6 +134,9 @@ scripts/build_static.py   →  docs/
 
 Vercel 쪽 설정은 저장소 루트의 `vercel.json` 한 장이 전부입니다 — 빌드 없이
 `docs/` 를 그대로 서빙하고, 매일 바뀌는 파일이라 캐시는 항상 재검증합니다.
+`.vercelignore` 는 두지 않습니다. `.gitignore` 문법이라 `data/` 같은 줄이 루트뿐
+아니라 `docs/data/` 까지 걷어내 시세가 통째로 404 가 났습니다. 어차피 서빙되는
+것은 `outputDirectory` 뿐이라 굳이 걸러낼 이유가 없습니다.
 대시보드에서는 저장소를 연결하고 **Framework Preset 을 Other** 로 두기만 하면
 됩니다 (Build Command·Output Directory 는 `vercel.json` 이 정합니다).
 
