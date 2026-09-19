@@ -6,34 +6,34 @@
     "key": "nasdaq",
     "label": "나스닥 종합지수",
     "ticker": "^IXIC",
-    "fetched_at": "2026-09-18T08:03:57+09:00",
-    "rows": 14021,
+    "fetched_at": "2026-09-19T09:48:51+09:00",
+    "rows": 14022,
     "first": "1971-02-05",
-    "last": "2026-09-17"
+    "last": "2026-09-18"
    },
    {
     "key": "vix",
     "label": "VIX 변동성지수",
     "ticker": "^VIX",
-    "fetched_at": "2026-09-18T08:03:57+09:00",
-    "rows": 9247,
+    "fetched_at": "2026-09-19T09:48:52+09:00",
+    "rows": 9248,
     "first": "1990-01-02",
-    "last": "2026-09-17"
+    "last": "2026-09-18"
    },
    {
     "key": "bond",
     "label": "국채 펀드 (FGOVX)",
     "ticker": "FGOVX",
-    "fetched_at": "2026-09-18T08:03:50+09:00",
-    "rows": 11772,
+    "fetched_at": "2026-09-19T09:48:47+09:00",
+    "rows": 11773,
     "first": "1980-01-02",
-    "last": "2026-09-16"
+    "last": "2026-09-17"
    },
    {
     "key": "bond_alt",
     "label": "美 7-10년 국채 ETF (참고)",
     "ticker": "IEF",
-    "fetched_at": "2026-09-18T08:03:53+09:00",
+    "fetched_at": "2026-09-19T09:48:49+09:00",
     "rows": 6073,
     "first": "2002-07-30",
     "last": "2026-09-17"
@@ -42,16 +42,16 @@
     "key": "sp500",
     "label": "S&P 500 (참고)",
     "ticker": "^GSPC",
-    "fetched_at": "2026-09-18T08:03:56+09:00",
-    "rows": 16788,
+    "fetched_at": "2026-09-19T09:48:51+09:00",
+    "rows": 16789,
     "first": "1960-01-04",
-    "last": "2026-09-17"
+    "last": "2026-09-18"
    },
    {
     "key": "usdkrw",
     "label": "원/달러 환율",
     "ticker": "KRW=X",
-    "fetched_at": "2026-09-18T08:03:53+09:00",
+    "fetched_at": "2026-09-19T09:48:49+09:00",
     "rows": 5914,
     "first": "2003-12-01",
     "last": "2026-09-18"
@@ -60,7 +60,7 @@
     "key": "leader:AAPL",
     "label": "1등주 이력 – AAPL",
     "ticker": "AAPL",
-    "fetched_at": "2026-09-18T08:03:49+09:00",
+    "fetched_at": "2026-09-19T09:48:47+09:00",
     "rows": 11533,
     "first": "1980-12-12",
     "last": "2026-09-17"
@@ -69,7 +69,7 @@
     "key": "leader:GE",
     "label": "1등주 이력 – GE",
     "ticker": "GE",
-    "fetched_at": "2026-09-18T08:03:51+09:00",
+    "fetched_at": "2026-09-19T09:48:48+09:00",
     "rows": 16286,
     "first": "1962-01-02",
     "last": "2026-09-17"
@@ -78,7 +78,7 @@
     "key": "leader:IBM",
     "label": "1등주 이력 – IBM",
     "ticker": "IBM",
-    "fetched_at": "2026-09-18T08:03:52+09:00",
+    "fetched_at": "2026-09-19T09:48:49+09:00",
     "rows": 16286,
     "first": "1962-01-02",
     "last": "2026-09-17"
@@ -87,7 +87,7 @@
     "key": "leader:MSFT",
     "label": "1등주 이력 – MSFT",
     "ticker": "MSFT",
-    "fetched_at": "2026-09-18T08:03:54+09:00",
+    "fetched_at": "2026-09-19T09:48:50+09:00",
     "rows": 10207,
     "first": "1986-03-13",
     "last": "2026-09-17"
@@ -96,7 +96,7 @@
     "key": "leader:NVDA",
     "label": "1등주 이력 – NVDA",
     "ticker": "NVDA",
-    "fetched_at": "2026-09-18T08:03:54+09:00",
+    "fetched_at": "2026-09-19T09:48:50+09:00",
     "rows": 6956,
     "first": "1999-01-22",
     "last": "2026-09-17"
@@ -105,7 +105,7 @@
     "key": "leader:XOM",
     "label": "1등주 이력 – XOM",
     "ticker": "XOM",
-    "fetched_at": "2026-09-18T08:03:55+09:00",
+    "fetched_at": "2026-09-19T09:48:51+09:00",
     "rows": 16286,
     "first": "1962-01-02",
     "last": "2026-09-17"
@@ -251,67 +251,67 @@
   {
    "ticker": "NVDA",
    "name": "NVIDIA Corporation",
-   "market_cap": 5296402989056.0
+   "market_cap": 5367153557504.0
   },
   {
    "ticker": "AAPL",
    "name": "Apple Inc.",
-   "market_cap": 4918238773248.0
+   "market_cap": 4905541566464.0
   },
   {
    "ticker": "GOOGL",
    "name": "Alphabet Inc.",
-   "market_cap": 4247823319040.0
+   "market_cap": 4274851676160.0
   },
   {
    "ticker": "MSFT",
    "name": "Microsoft Corporation",
-   "market_cap": 3696065511424.0
+   "market_cap": 3666585845760.0
   },
   {
    "ticker": "AMZN",
    "name": "Amazon.com, Inc.",
-   "market_cap": 2709413953536.0
-  },
-  {
-   "ticker": "META",
-   "name": "Meta Platforms, Inc.",
-   "market_cap": 1738188914688.0
+   "market_cap": 2736595664896.0
   },
   {
    "ticker": "AVGO",
    "name": "Broadcom Inc.",
-   "market_cap": 1657881624576.0
+   "market_cap": 1707097718784.0
+  },
+  {
+   "ticker": "META",
+   "name": "Meta Platforms, Inc.",
+   "market_cap": 1696002211840.0
   },
   {
    "ticker": "TSLA",
    "name": "Tesla, Inc.",
-   "market_cap": 1446324338688.0
+   "market_cap": 1438701584384.0
   },
   {
    "ticker": "BRK-B",
    "name": "Berkshire Hathaway Inc. New",
-   "market_cap": 1090049409024.0
+   "market_cap": 1091269558272.0
   },
   {
    "ticker": "LLY",
    "name": "Eli Lilly and Company",
-   "market_cap": 1027678404608.0
+   "market_cap": 1028115464192.0
   },
   {
    "ticker": "JPM",
    "name": "JP Morgan Chase & Co.",
-   "market_cap": 928531021824.0
+   "market_cap": 929488044032.0
   },
   {
    "ticker": "WMT",
    "name": "Walmart Inc.",
-   "market_cap": 849843257344.0
+   "market_cap": 849365827584.0
   },
   {
    "ticker": "XOM",
    "name": "ExxonMobil Holdings Corporation",
-   "market_cap": 671351898112.0
+   "market_cap": 672462077952.0
   }
  ],
  "defaults": {
@@ -341,10 +341,10 @@
     "trim_threshold": -10.0,
     "trim_fraction": 1.0
    },
-   "full_cagr": 0.17406633160239648,
-   "full_mdd": -0.42796612612948426,
-   "full_final_value": 54384762594.38872,
-   "full_sheltered": 0.10812876921770152,
+   "full_cagr": 0.17405505205214067,
+   "full_mdd": -0.42796645635109887,
+   "full_final_value": 54384389963.52928,
+   "full_sheltered": 0.10811958552743332,
    "full_trades_per_year": 6.679511881824021
   },
   "lowturn": {
@@ -360,10 +360,10 @@
     "trim_threshold": -20.0,
     "trim_fraction": 1.0
    },
-   "full_cagr": 0.1671461966846446,
-   "full_mdd": -0.4137233646707399,
-   "full_final_value": 53491779143.41991,
-   "full_sheltered": 0.07721056655058184,
+   "full_cagr": 0.16713542536810388,
+   "full_mdd": -0.41372266375429934,
+   "full_final_value": 53491511120.47764,
+   "full_sheltered": 0.0772040088330219,
    "full_trades_per_year": 3.1898950974095484
   },
   "defensive": {
@@ -379,10 +379,10 @@
     "trim_threshold": -10.0,
     "trim_fraction": 1.0
    },
-   "full_cagr": 0.12070018098253832,
-   "full_mdd": -0.31327059884782515,
-   "full_final_value": 8451699351.205258,
-   "full_sheltered": 0.3374670857045783,
+   "full_cagr": 0.12076691035102383,
+   "full_mdd": -0.31327091725339706,
+   "full_final_value": 8477894564.7711115,
+   "full_sheltered": 0.3374384236453202,
    "full_trades_per_year": 3.9606080068507814
   },
   "buyhold": {
@@ -398,9 +398,9 @@
     "trim_threshold": -999.0,
     "trim_fraction": 0.0
    },
-   "full_cagr": 0.13991843914401425,
-   "full_mdd": -0.6738599013510054,
-   "full_final_value": 26813056516.443153,
+   "full_cagr": 0.13990966792142734,
+   "full_mdd": -0.6738592566015991,
+   "full_final_value": 26813030122.538235,
    "full_sheltered": 0.0,
    "full_trades_per_year": 2.397773496039392
   }
@@ -461,7 +461,7 @@
  "train_end": "2005-12-31",
  "test_start": "2006-01-01",
  "panel_start": "1980-01-02",
- "panel_end": "2026-09-17",
- "built_at": "2026-09-18T08:04:02+09:00",
+ "panel_end": "2026-09-18",
+ "built_at": "2026-09-19T09:48:56+09:00",
  "static": true
 }
